@@ -1,20 +1,41 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAuth } from 'firebase/auth';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+import { initializeApp, getApps } from 'firebase/app';
+import {
+  initializeAuth,
+  getAuth,
+  getReactNativePersistence
+} from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  FIREBASE_API_KEY,
+  FIREBASE_AUTH_DOMAIN,
+  FIREBASE_PROJECT_ID,
+  FIREBASE_STORAGE_BUCKET,
+  FIREBASE_MESSAGING_SENDER_ID,
+  FIREBASE_APP_ID
+} from '@env';
+
 const firebaseConfig = {
-  apiKey: "AIzaSyCy6tOQKrGXuuSrd5W-GBjyM_o99QE35fU",
-  authDomain: "playground-app-748f2.firebaseapp.com",
-  projectId: "playground-app-748f2",
-  storageBucket: "playground-app-748f2.firebasestorage.app",
-  messagingSenderId: "263589227516",
-  appId: "1:263589227516:web:9bb5202960f09f257c2079"
+  apiKey:              FIREBASE_API_KEY,
+  authDomain:          FIREBASE_AUTH_DOMAIN,
+  projectId:           FIREBASE_PROJECT_ID,
+  storageBucket:       FIREBASE_STORAGE_BUCKET,
+  messagingSenderId:   FIREBASE_MESSAGING_SENDER_ID,
+  appId:               FIREBASE_APP_ID,
 };
 
+// 1) only initialize the App once
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
-const app = initializeApp(firebaseConfig);
+// 2) try initializeAuth; on error, fall back to getAuth()
+let auth;
+try {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage)
+  });
+} catch (e) {
+  // already initialized
+  auth = getAuth(app);
+}
 
-export const auth = getAuth(app);
+export { auth };
