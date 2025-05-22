@@ -13,10 +13,11 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db,auth } from '../firebaseConfig';
+import { Ionicons, Feather } from '@expo/vector-icons';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { db, auth } from '../firebaseConfig';
 import { AuthContext } from '../contexts/AuthContext';
+import * as ImagePicker from "expo-image-picker";
 
 export default function ProfileScreen() {
   const { user } = useContext(AuthContext);
@@ -24,13 +25,6 @@ export default function ProfileScreen() {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
-
-  const suggestions = [
-    { id: '1', name: 'London', image: { uri: 'https://randomuser.me/api/portraits/women/21.jpg' } },
-    { id: '2', name: 'Oslo', image: { uri: 'https://randomuser.me/api/portraits/men/32.jpg' } },
-    { id: '3', name: 'Bangkok', image: { uri: 'https://randomuser.me/api/portraits/women/44.jpg' } },
-    { id: '4', name: 'Minsk', image: { uri: 'https://randomuser.me/api/portraits/men/25.jpg' } },
-  ];
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -83,9 +77,34 @@ export default function ProfileScreen() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      // onAuthStateChanged in AuthContext will handle navigation
     } catch (error) {
       Alert.alert('Logout Error', error.message);
+    }
+  };
+
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      alert("Permission to access camera roll is required!");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      if (user?.uid) {
+        try {
+          const userRef = doc(db, 'users', user.uid);
+          await updateDoc(userRef, { avatar: uri });
+          setProfileData({ ...profileData, avatar: uri });
+        } catch (error) {
+          console.error('Error updating avatar:', error);
+        }
+      }
     }
   };
 
@@ -96,160 +115,203 @@ export default function ProfileScreen() {
   const followers = profileData?.followers ?? 0;
   const following = profileData?.following ?? 0;
   const about = formData.about || '';
+  const posts = profileData?.posts ?? 0;
 
   return (
     <SafeAreaView style={styles.container}>
-        <ScrollView>
-      {/* Header */}
-      <View style={styles.header}>
-        {editMode ? (
-          <TextInput
-            style={styles.inputName}
-            value={formData.fullName}
-            onChangeText={(text) => setFormData({ ...formData, fullName: text })}
-          />
-        ) : (
-          <Text style={styles.name}>Hey {fullName}</Text>
-        )}
-        <View style={styles.icons}>
-          <TouchableOpacity onPress={() => setEditMode(!editMode)}>
-            <Ionicons name={editMode ? 'close-outline' : 'create-outline'} size={24} style={styles.icon} />
-          </TouchableOpacity>
-          {editMode && (
-            <TouchableOpacity onPress={handleSave}>
-              <Ionicons name="checkmark-done-outline" size={24} style={styles.icon} />
+      <ScrollView>
+        {/* Header Icons */}
+        <View style={styles.editIcons}>
+          {editMode ? (
+            <>
+              <TouchableOpacity onPress={handleSave}>
+                <Ionicons name="checkmark-done" size={26} color="#4CAF50" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setEditMode(false)}>
+                <Ionicons name="close" size={26} color="#f00" />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <TouchableOpacity onPress={() => setEditMode(true)}>
+              <Ionicons name="create-outline" size={26} color="#333" />
             </TouchableOpacity>
           )}
         </View>
-      </View>
 
-      {/* Stats */}
-      <View style={styles.statsRow}>
-        <View style={styles.statBox}>
-          <Text style={styles.statNumber}>{following}</Text>
-          <Text style={styles.statLabel}>Following</Text>
-        </View>
-        <View style={styles.statBox}>
-          <Text style={styles.statNumber}>{followers}</Text>
-          <Text style={styles.statLabel}>Followers</Text>
-        </View>
-        <View style={styles.avatars}>
-          <Image source={{ uri: avatar }} style={styles.avatar} />
-          <Image source={{ uri: 'https://randomuser.me/api/portraits/men/81.jpg' }} style={styles.avatar} />
-        </View>
-      </View>
+        {/* Profile Section */}
+        <View style={styles.profileRow}>
+          <View style={styles.avatarWrapper}>
+            <Image source={{ uri: avatar }} style={styles.avatar} />
 
-      {/* About */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>About</Text>
-        {editMode ? (
-          <TextInput
-            style={styles.inputAbout}
-            value={formData.about}
-            multiline
-            onChangeText={(text) => setFormData({ ...formData, about: text })}
-            placeholder="Write something about yourself..."
-          />
-        ) : (
-          <Text style={styles.aboutText}>{about || 'No bio added yet.'}</Text>
-        )}
-      </View>
+            {editMode && (
+              <TouchableOpacity style={styles.addPhotoIcon} onPress={pickImage}>
+                <Feather name="plus" size={18} color="#fff" />
+              </TouchableOpacity>
+            )}
+          </View>
 
-      {/* Media Upload Section */}
-      <View style={styles.mediaRow}>
-        {[1, 2, 3].map((_, i) => (
-          <TouchableOpacity key={i} style={styles.mediaBox}>
-            <Ionicons name="add-outline" size={32} color="#ccc" />
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Events Section */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Events</Text>
-        <Text style={styles.eventTitle}>Basketball at the Willows</Text>
-        <Text style={styles.eventText}>145 Champions Way Dr. Fairfield, OH 45014</Text>
-        <Text style={styles.eventSubText}>Anyone welcome to join. Real hoopers only.</Text>
-      </View>
-
-      {/* Suggestions Section */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Suggestions</Text>
-        <FlatList
-          data={suggestions}
-          horizontal
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.suggestionBox}>
-              <Image source={item.image} style={styles.suggestionAvatar} />
-              <Text style={styles.suggestionLabel}>{item.name}</Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statBox}>
+              <Text style={styles.statNumber}>{posts}</Text>
+              <Text style={styles.statLabel}>Posts</Text>
             </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statNumber}>{followers}</Text>
+              <Text style={styles.statLabel}>Followers</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statNumber}>{following}</Text>
+              <Text style={styles.statLabel}>Following</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Name + About */}
+        <View style={styles.bioSection}>
+          {editMode ? (
+            <>
+              <TextInput
+                style={styles.inputName}
+                value={formData.fullName}
+                onChangeText={(text) => setFormData({ ...formData, fullName: text })}
+              />
+              <TextInput
+                style={styles.inputAbout}
+                value={formData.about}
+                onChangeText={(text) => setFormData({ ...formData, about: text })}
+                multiline
+                placeholder="Write something about yourself..."
+              />
+            </>
+          ) : (
+            <>
+              <Text style={styles.name}>{fullName}</Text>
+              <Text style={styles.aboutText}>{about || 'No bio added yet.'}</Text>
+            </>
           )}
-        />
-      </View>
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutButtonText}>Log Out</Text>
-      </TouchableOpacity>
-    </ScrollView>
-    
+        </View>
+
+        {/* Edit Profile Button */}
+        {!editMode && (
+          <TouchableOpacity style={styles.editProfileBtn} onPress={() => setEditMode(true)}>
+            <Text style={styles.editProfileText}>Edit Profile</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Logout Button */}
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Log Out</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 20 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  name: { fontSize: 28, fontWeight: 'bold' },
-  icons: { flexDirection: 'row' },
-  icon: { marginLeft: 15 },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingHorizontal: 15,
+  },
+  editIcons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 10,
+    marginBottom: 10,
+    gap: 15,
+  },
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  avatar: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 2,
+    borderColor: '#ccc',
+  },
+  avatarWrapper: {
+    position: 'relative',
+  },
+  addPhotoIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#FF822B',
+    borderRadius: 14,
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderColor: '#fff',
+    borderWidth: 2,
+  },
+  statsRow: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginLeft: 15,
+  },
+  statBox: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  statLabel: {
+    fontSize: 13,
+    color: '#555',
+  },
+  bioSection: {
+    marginTop: 12,
+  },
+  name: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  aboutText: {
+    fontSize: 14,
+    color: '#444',
+    marginTop: 4,
+  },
   inputName: {
-    fontSize: 26,
+    fontSize: 16,
     fontWeight: 'bold',
     borderBottomWidth: 1,
     borderColor: '#ccc',
-    minWidth: 150,
+    marginBottom: 4,
   },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 20 },
-  statBox: { alignItems: 'center' },
-  statNumber: { fontSize: 20, fontWeight: 'bold' },
-  statLabel: { fontSize: 14, color: '#666' },
-  avatars: { flexDirection: 'row' },
-  avatar: { width: 30, height: 30, borderRadius: 15, marginHorizontal: 2 },
-  card: { padding: 15, backgroundColor: '#f9f9f9', borderRadius: 10, marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
-  aboutText: { fontSize: 14, color: '#333' },
   inputAbout: {
     fontSize: 14,
-    borderColor: '#ccc',
     borderWidth: 1,
+    borderColor: '#ccc',
     padding: 8,
-    borderRadius: 8,
-    minHeight: 60,
+    borderRadius: 6,
+    minHeight: 40,
     textAlignVertical: 'top',
   },
-  mediaRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  mediaBox: {
-    width: 100,
-    height: 100,
+  editProfileBtn: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 10,
-    justifyContent: 'center',
+    borderRadius: 8,
+    paddingVertical: 10,
     alignItems: 'center',
+    marginTop: 12,
   },
-  eventTitle: { fontWeight: 'bold', fontSize: 16 },
-  eventText: { fontSize: 14, color: '#444' },
-  eventSubText: { fontSize: 12, color: '#888' },
-  suggestionBox: { alignItems: 'center', marginRight: 15 },
-  suggestionAvatar: { width: 50, height: 50, borderRadius: 25 },
-  suggestionLabel: { fontSize: 12, marginTop: 4 },
-   logoutButton: {
+  editProfileText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  logoutButton: {
     backgroundColor: '#FF3B30',
-    padding: 15,
+    padding: 14,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
+    marginVertical: 20,
   },
   logoutButtonText: {
     color: '#fff',
