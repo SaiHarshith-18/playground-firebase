@@ -6,7 +6,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthProvider, AuthContext } from '../contexts/AuthContext';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
-import BottomTabNavigator from './BottomTabNavigator'; 
+import PostDetailScreen from '../screens/PostDetailScreen';
+import SuggestionsScreen from '../screens/SuggestionsScreen';
+import BottomTabNavigator from './BottomTabNavigator';
+import ChatScreen from '../screens/ChatScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -19,7 +22,12 @@ export default function AppNav() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user
           ? (
-            <Stack.Screen name="MainApp" component={BottomTabNavigator} />
+            <>
+              <Stack.Screen name="MainApp" component={BottomTabNavigator} />
+              <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+              <Stack.Screen name="Suggestions" component={SuggestionsScreen} />
+              <Stack.Screen name="Chat" component={ChatScreen} />
+            </>
           )
           : (
             <>
