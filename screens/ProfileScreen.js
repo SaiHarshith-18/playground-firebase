@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { signOut } from 'firebase/auth';
 import {
@@ -19,12 +20,23 @@ import { db, auth } from '../firebaseConfig';
 import { AuthContext } from '../contexts/AuthContext';
 import * as ImagePicker from "expo-image-picker";
 
+
+const screenWidth = Dimensions.get('window').width;
+const ITEM_MARGIN = 4;
+const NUM_COLUMNS = 3;
+const ITEM_SIZE = (screenWidth - (ITEM_MARGIN * (NUM_COLUMNS + 1))) / NUM_COLUMNS;
+
 export default function ProfileScreen() {
   const { user } = useContext(AuthContext);
   const [profileData, setProfileData] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
+  const [media, setMedia] = useState([
+    { id: 'add' }, // first box for adding media
+  ]);
+  const [showAllMedia, setShowAllMedia] = useState(false);
+
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -108,6 +120,29 @@ export default function ProfileScreen() {
     }
   };
 
+
+  const addNewMedia = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert('Permission is required to access media library');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      const newMedia = { id: Date.now().toString(), url: uri };
+      setMedia((prev) => [...prev, newMedia]);
+    }
+  };
+
+
   if (loading) return <ActivityIndicator size="large" style={{ marginTop: 100 }} />;
 
   const fullName = formData.fullName || 'User';
@@ -116,6 +151,8 @@ export default function ProfileScreen() {
   const following = profileData?.following ?? 0;
   const about = formData.about || '';
   const posts = profileData?.posts ?? 0;
+
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -196,6 +233,61 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.editProfileBtn} onPress={() => setEditMode(true)}>
             <Text style={styles.editProfileText}>Edit Profile</Text>
           </TouchableOpacity>
+        )}
+
+        {/* Section Header */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Photos and Videos</Text>
+          <TouchableOpacity onPress={() => setShowAllMedia(true)}>
+            <Text style={styles.seeAllText}>See all</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Horizontal preview row */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.mediaPreviewRow}
+        >
+          {/* Upload button */}
+          <TouchableOpacity onPress={addNewMedia} style={styles.previewAddBox}>
+            <Ionicons name="add" size={28} color="#FF822B" />
+          </TouchableOpacity>
+
+          {/* Show latest 2 uploaded images */}
+          {media
+            .filter((item) => item.id !== 'add')
+            .slice()
+            .reverse()
+            .map((item) => (
+              <Image key={item.id} source={{ uri: item.url }} style={styles.previewImage} />
+            ))}
+        </ScrollView>
+
+        {/* See all */}
+        {showAllMedia && (
+          <View style={styles.mediaModal}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>All Media</Text>
+              <TouchableOpacity onPress={() => setShowAllMedia(false)}>
+                <Ionicons name="close" size={24} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={styles.mediaGrid}>
+              {media
+                .filter((item) => item.id !== 'add')
+                .slice()
+                .reverse() // Newest first
+                .map((item) => (
+                  <Image
+                    key={item.id}
+                    source={{ uri: item.url }}
+                    style={styles.modalMediaImage}
+                  />
+                ))}
+            </ScrollView>
+          </View>
         )}
 
         {/* Logout Button */}
@@ -305,6 +397,98 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#333',
+  },
+  mediaSection: {
+    marginTop: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    marginBottom: 8,
+    marginTop: 20
+  },
+  sectionTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  seeAllText: {
+    color: '#FF822B',
+    fontSize: 14,
+  },
+  addMediaBox: {
+    width: ITEM_SIZE,
+    height: ITEM_SIZE,
+    margin: ITEM_MARGIN,
+    borderWidth: 2,
+    borderColor: '#FF822B',
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+
+  mediaPreviewRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginVertical: 10,
+    marginLeft: 4
+  },
+  previewAddBox: {
+    width: 110,
+    height: 110,
+    borderWidth: 2,
+    borderColor: '#FF822B',
+    borderStyle: 'dashed',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  previewImage: {
+    width: 110,
+    height: 110,
+    borderRadius: 10,
+  },
+  mediaModal: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#fff',
+    zIndex: 10,
+    paddingTop: 50,
+    paddingHorizontal: 15,
+  },
+
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  mediaGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    gap: 12
+  },
+
+  modalMediaImage: {
+    width: 100,
+    height: 100,
+    // marginRight: 12,
+    marginBottom: 12,
+    borderRadius: 8,
   },
   logoutButton: {
     backgroundColor: '#FF3B30',
