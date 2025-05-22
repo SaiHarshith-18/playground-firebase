@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { signOut } from 'firebase/auth';
 import {
   View,
@@ -20,7 +21,6 @@ import { db, auth } from '../firebaseConfig';
 import { AuthContext } from '../contexts/AuthContext';
 import * as ImagePicker from "expo-image-picker";
 
-
 const screenWidth = Dimensions.get('window').width;
 const ITEM_MARGIN = 4;
 const NUM_COLUMNS = 3;
@@ -32,6 +32,8 @@ export default function ProfileScreen() {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
+  const [selectedPost, setSelectedPost] = useState(null);
+
   const [media, setMedia] = useState([
     { id: 'add' }, // first box for adding media
   ]);
@@ -52,6 +54,8 @@ export default function ProfileScreen() {
             fullName: data.fullName || '',
             about: data.about || '',
           });
+          const dbMedia = data.media || [];
+          setMedia([{ id: 'add' }, ...dbMedia]);
         } else {
           setProfileData({});
           setFormData({ fullName: '', about: '' });
@@ -65,6 +69,8 @@ export default function ProfileScreen() {
 
     if (user?.uid) fetchProfile();
   }, [user]);
+
+  const navigation = useNavigation();
 
   const handleSave = async () => {
     try {
@@ -129,7 +135,7 @@ export default function ProfileScreen() {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: [ImagePicker.MediaType.IMAGE],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
@@ -137,10 +143,41 @@ export default function ProfileScreen() {
 
     if (!result.canceled) {
       const uri = result.assets[0].uri;
-      const newMedia = { id: Date.now().toString(), url: uri };
-      setMedia((prev) => [...prev, newMedia]);
+
+      Alert.prompt("Add caption", "What's on your mind?", async (captionText) => {
+        const newPost = {
+          id: Date.now().toString(),
+          url: uri,
+          caption: captionText || '',
+          createdAt: Date.now(),
+        };
+
+        const updatedMedia = [newPost, ...media.filter(item => item.id !== 'add')];
+        setMedia([{ id: 'add' }, ...updatedMedia]);
+
+        try {
+          const userRef = doc(db, 'users', user.uid);
+          await updateDoc(userRef, { media: updatedMedia });
+        } catch (error) {
+          console.error('Error saving post:', error);
+        }
+      });
     }
   };
+
+  const handleDeletePost = async (postId) => {
+    const updated = media.filter(item => item.id !== postId && item.id !== 'add');
+    setMedia([{ id: 'add' }, ...updated]);
+
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { media: updated });
+      setSelectedPost(null);
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+  };
+
 
 
   if (loading) return <ActivityIndicator size="large" style={{ marginTop: 100 }} />;
@@ -150,7 +187,9 @@ export default function ProfileScreen() {
   const followers = profileData?.followers ?? 0;
   const following = profileData?.following ?? 0;
   const about = formData.about || '';
-  const posts = profileData?.posts ?? 0;
+  const posts = media.filter(item => item.id !== 'add').length;
+
+  const mediaWithoutAdd = media.filter((item) => item.id !== 'add').slice().reverse();
 
 
 
@@ -159,7 +198,7 @@ export default function ProfileScreen() {
       <ScrollView>
         {/* Header Icons */}
         <View style={styles.editIcons}>
-          {editMode ? (
+          {editMode && (
             <>
               <TouchableOpacity onPress={handleSave}>
                 <Ionicons name="checkmark-done" size={26} color="#4CAF50" />
@@ -168,10 +207,6 @@ export default function ProfileScreen() {
                 <Ionicons name="close" size={26} color="#f00" />
               </TouchableOpacity>
             </>
-          ) : (
-            <TouchableOpacity onPress={() => setEditMode(true)}>
-              <Ionicons name="create-outline" size={26} color="#333" />
-            </TouchableOpacity>
           )}
         </View>
 
@@ -228,12 +263,17 @@ export default function ProfileScreen() {
           )}
         </View>
 
+<View style={{flexDirection: 'row', gap: 15,alignItems: 'center'}}>
         {/* Edit Profile Button */}
         {!editMode && (
           <TouchableOpacity style={styles.editProfileBtn} onPress={() => setEditMode(true)}>
             <Text style={styles.editProfileText}>Edit Profile</Text>
           </TouchableOpacity>
         )}
+         <TouchableOpacity onPress={() => navigation.navigate('Suggestions')}>
+                <Ionicons name="person-add-outline" size={26} color="#FF822B" />
+              </TouchableOpacity>
+              </View>
 
         {/* Section Header */}
         <View style={styles.sectionHeader}>
@@ -255,26 +295,49 @@ export default function ProfileScreen() {
           </TouchableOpacity>
 
           {/* Show latest 2 uploaded images */}
-          {media
-            .filter((item) => item.id !== 'add')
-            .slice()
-            .reverse()
-            .map((item) => (
-              <Image key={item.id} source={{ uri: item.url }} style={styles.previewImage} />
-            ))}
+
+          {mediaWithoutAdd.map((item, index) => (
+            <TouchableOpacity
+              key={item.id}
+              onPress={() =>
+                navigation.navigate('PostDetail', {
+                  media: mediaWithoutAdd, // full media list
+                  index, // current post index
+                })
+              }
+            >
+              <Image source={{ uri: item.url }} style={styles.previewImage} />
+            </TouchableOpacity>
+          ))}
         </ScrollView>
+
+        {selectedPost && (
+          <View style={styles.fullPostOverlay}>
+            <TouchableOpacity
+              style={styles.closeOverlay}
+              onPress={() => setSelectedPost(null)}
+            >
+              <Ionicons name="close" size={28} color="#fff" />
+            </TouchableOpacity>
+            <Image source={{ uri: selectedPost.url }} style={styles.fullPostImage} />
+            <Text style={styles.fullPostCaption}>{selectedPost.caption}</Text>
+            <TouchableOpacity onPress={() => handleDeletePost(selectedPost.id)}>
+              <Text style={styles.deleteText}>Delete Post</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* See all */}
         {showAllMedia && (
           <View style={styles.mediaModal}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>All Media</Text>
-              <TouchableOpacity onPress={() => setShowAllMedia(false)}>
+              <TouchableOpacity key="add-media" onPress={() => setShowAllMedia(false)}>
                 <Ionicons name="close" size={24} />
               </TouchableOpacity>
             </View>
 
-            <ScrollView contentContainerStyle={styles.mediaGrid}>
+            <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.mediaGrid}>
               {media
                 .filter((item) => item.id !== 'add')
                 .slice()
@@ -389,8 +452,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
-    paddingVertical: 10,
+    padding: 10,
     alignItems: 'center',
+    width: '85%',
     marginTop: 12,
   },
   editProfileText: {
@@ -462,6 +526,36 @@ const styles = StyleSheet.create({
     zIndex: 10,
     paddingTop: 50,
     paddingHorizontal: 15,
+  },
+  fullPostOverlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    zIndex: 100,
+  },
+  fullPostImage: {
+    width: '100%',
+    height: 300,
+    resizeMode: 'contain',
+    marginBottom: 20,
+  },
+  fullPostCaption: {
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  closeOverlay: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+  },
+  deleteText: {
+    color: '#FF3B30',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 
   modalHeader: {
