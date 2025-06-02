@@ -1,88 +1,114 @@
-// ChatScreen.js
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
-  Image,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
+  View, Text, TextInput, TouchableOpacity, FlatList,
+  Image, StyleSheet, KeyboardAvoidingView, Platform, SafeAreaView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
+import { AuthContext } from '../contexts/AuthContext';
 
-export default function ChatScreen({ route }) {
-  const { chatUser } = route.params;
-  const [messages, setMessages] = useState([
-  ]);
+export default function ChatScreen({ route, navigation }) {
+  const { recipient: chatUser } = route.params || {};
+  const { user } = useContext(AuthContext);
+  const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
 
-  const autoReplies = {
-    hi: 'Hey there! \uD83D\uDC4B',
-    hello: 'Hello! How are you?',
-    hey: 'Hi! Looking for a game buddy?',
-    game: 'Let’s schedule a match! \uD83C\uDFC0',
-    thanks: 'You’re welcome! \uD83D\uDE0A',
-  };
+  const chatId = user && chatUser ? [user.uid, chatUser.uid].sort().join('_') : null;
 
-  const handleSend = () => {
+  useEffect(() => {
+    if (!chatId) return;
+
+    const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const msgs = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setMessages(msgs);
+    });
+
+    return unsubscribe;
+  }, [chatId]);
+
+  const handleSend = async () => {
     if (!inputText.trim()) return;
 
-    const newMessage = {
-      id: Date.now().toString(),
-      text: inputText,
-      from: 'user',
-    };
+    if (!chatUser?.uid) {
+      console.error('Recipient UID is undefined. Cannot send message.');
+      return;
+    }
 
-    setMessages((prev) => [...prev, newMessage]);
-    setInputText('');
-
-    setTimeout(() => {
-      const lower = inputText.toLowerCase();
-      const reply = autoReplies[lower] || "I'm not sure how to respond to that.";
-
-      setMessages((prev) => [
-        ...prev,
-        { id: Date.now().toString(), text: reply, from: 'bot' },
-      ]);
-    }, 1000);
+    try {
+      await addDoc(collection(db, 'chats', chatId, 'messages'), {
+        text: inputText,
+        from: user.uid,
+        to: chatUser.uid,
+        createdAt: serverTimestamp(),
+      });
+      setInputText('');
+    } catch (error) {
+      console.error('Send Error:', error);
+    }
   };
 
+
   const renderMessage = ({ item }) => {
-    const isUser = item.from === 'user';
-    const profileImage = isUser
-      ? 'https://randomuser.me/api/portraits/women/44.jpg'
-      : 'https://randomuser.me/api/portraits/men/32.jpg';
+    const isCurrentUser = item.from === user.uid;
 
     return (
-      <View style={[styles.messageRow, isUser ? styles.userRow : styles.botRow]}>
-        {!isUser && <Image source={{ uri: profileImage }} style={styles.avatar} />}
-        <View style={[styles.bubble, isUser ? styles.userBubble : styles.botBubble]}>
-          <Text style={[styles.bubbleText, isUser && styles.userText]}>{item.text}</Text>
+      <View style={[
+        styles.messageRow,
+        { justifyContent: isCurrentUser ? 'flex-end' : 'flex-start' }
+      ]}>
+        <View style={[
+          styles.bubble,
+          isCurrentUser ? styles.userBubble : styles.botBubble
+        ]}>
+          <Text style={styles.bubbleText}>{item.text}</Text>
         </View>
-        {isUser && <Image source={{ uri: profileImage }} style={styles.avatar} />}
       </View>
     );
   };
 
+  if (!user || !chatUser) {
+    return (
+      <View style={styles.centered}>
+        <Text>Loading chat...</Text>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <Ionicons name="arrow-back" size={24} color="#FF822B" />
-        <Image source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} style={styles.headerAvatar} />
-        <Text style={styles.headerTitle}>{chatUser?.fullName || 'Allen Iverson'}</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#FF822B" />
+        </TouchableOpacity>
+        {chatUser.avatar ? (
+          <Image
+            source={{ uri: chatUser.avatar }}
+            style={styles.headerAvatar}
+          />
+        ) : (
+          <Ionicons name="person-circle-outline" size={36} color="grey" style={styles.headerAvatar} />
+        )}
+        <Text style={styles.headerTitle}>{chatUser.fullName || 'Chat User'}</Text>
       </View>
 
+      {/* Chat messages */}
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id}
         renderItem={renderMessage}
-        contentContainerStyle={styles.chatArea}
+        contentContainerStyle={[styles.chatArea, messages.length === 0 && { flex: 1, justifyContent: 'center' }]}
+        ListEmptyComponent={() => (
+          <Text style={{ textAlign: 'center', color: '#aaa' }}>Start a conversation...</Text>
+        )}
       />
 
+      {/* Input */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={80}
@@ -103,10 +129,8 @@ export default function ChatScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -127,24 +151,10 @@ const styles = StyleSheet.create({
   },
   chatArea: {
     padding: 10,
-    flexGrow: 1,
   },
   messageRow: {
     flexDirection: 'row',
     marginBottom: 12,
-    alignItems: 'flex-end',
-  },
-  userRow: {
-    justifyContent: 'flex-end',
-  },
-  botRow: {
-    justifyContent: 'flex-start',
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginHorizontal: 8,
   },
   bubble: {
     maxWidth: '70%',
@@ -152,19 +162,16 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   botBubble: {
-    backgroundColor: '#FF822B',
+    backgroundColor: '#727472',
     borderTopLeftRadius: 0,
   },
   userBubble: {
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#FF822B',
     borderTopRightRadius: 0,
   },
   bubbleText: {
     fontSize: 14,
     color: '#fff',
-  },
-  userText: {
-    color: '#333',
   },
   inputWrapper: {
     flexDirection: 'row',

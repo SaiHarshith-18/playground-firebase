@@ -105,10 +105,10 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   calloutButton: {
-    width: 85,
-    height: 85,
+    width: 105,
+    height: 105,
     position: 'absolute',
-    bottom: 17,
+    bottom: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
