@@ -10,7 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 
 export default function LoginScreen({ navigation }) {
@@ -24,6 +24,22 @@ export default function LoginScreen({ navigation }) {
       Alert.alert('Login Error', err.message);
     }
   };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      Alert.alert('Enter Email', 'Please enter your registered email address.');
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      Alert.alert('Check your email', 'Password reset link sent.');
+    } catch (error) {
+      console.error('Reset error:', error);
+      Alert.alert('Error', error.message);
+    }
+  };
+
 
   return (
     <KeyboardAvoidingView
@@ -54,6 +70,10 @@ export default function LoginScreen({ navigation }) {
           placeholderTextColor="#aaa"
         />
 
+        <TouchableOpacity onPress={handleForgotPassword}>
+  <Text style={styles.forgotText}>Forgot Password?</Text>
+</TouchableOpacity>
+
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Log In</Text>
         </TouchableOpacity>
@@ -61,6 +81,7 @@ export default function LoginScreen({ navigation }) {
         <TouchableOpacity onPress={() => navigation.navigate('Register')}>
           <Text style={styles.link}>Don't have an account? <Text style={{ color: '#D44A16', fontWeight: '600' }}>Register</Text></Text>
         </TouchableOpacity>
+
       </View>
     </KeyboardAvoidingView>
   );
@@ -125,5 +146,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#6B7280',
     fontSize: 14,
-  }
+  },
+  forgotText: {
+  color: '#FF822B',
+  textAlign: 'right',
+  marginTop: 4,
+  marginBottom: 8,
+  fontSize: 13,
+  fontWeight: '500',
+},
+
 });
