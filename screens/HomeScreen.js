@@ -23,8 +23,11 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [profileImage, setProfileImage] = useState(null);
 
-  useEffect(() => {
-    (async () => {
+  useFocusEffect(
+    useCallback(() => {
+    const fetchData = async () => {
+      setLoading(true);
+
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         console.log("Permission to access location was denied");
@@ -37,7 +40,6 @@ export default function HomeScreen() {
         latitude: currentLocation.coords.latitude,
         longitude: currentLocation.coords.longitude,
       });
-      setLoading(false);
 
       // Fetch avatar from Firestore
       if (user?.uid) {
@@ -45,10 +47,15 @@ export default function HomeScreen() {
         const userSnap = await getDoc(userRef);
         if (userSnap.exists() && userSnap.data().avatar) {
           setProfileImage(userSnap.data().avatar);
-        }
+        } else {
+          setProfileImage(null);
       }
-    })();
-  }, [user]);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, [user])
+);
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
