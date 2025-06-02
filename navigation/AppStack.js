@@ -10,6 +10,7 @@ import PostDetailScreen from '../screens/PostDetailScreen';
 import SuggestionsScreen from '../screens/SuggestionsScreen';
 import BottomTabNavigator from './BottomTabNavigator';
 import ChatScreen from '../screens/ChatScreen';
+import AllMediaScreen from '../screens/AllMediaScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -27,6 +28,7 @@ export default function AppNav() {
               <Stack.Screen name="PostDetail" component={PostDetailScreen} />
               <Stack.Screen name="Suggestions" component={SuggestionsScreen} />
               <Stack.Screen name="Chat" component={ChatScreen} />
+              <Stack.Screen name="AllMedia" component={AllMediaScreen} />
             </>
           )
           : (
