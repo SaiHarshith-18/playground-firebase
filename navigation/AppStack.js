@@ -11,6 +11,8 @@ import SuggestionsScreen from '../screens/SuggestionsScreen';
 import BottomTabNavigator from './BottomTabNavigator';
 import ChatScreen from '../screens/ChatScreen';
 import AllMediaScreen from '../screens/AllMediaScreen';
+import CreateEventScreen from '../screens/CreateEventScreen';
+import LocationPicker from '../screens/LocationPicker';
 
 
 const Stack = createNativeStackNavigator();
@@ -29,6 +31,8 @@ export default function AppNav() {
               <Stack.Screen name="Suggestions" component={SuggestionsScreen} />
               <Stack.Screen name="Chat" component={ChatScreen} />
               <Stack.Screen name="AllMedia" component={AllMediaScreen} />
+              <Stack.Screen name="CreateEvent" component={CreateEventScreen} />
+              <Stack.Screen name="LocationPicker" component={LocationPicker} />
             </>
           )
           : (
