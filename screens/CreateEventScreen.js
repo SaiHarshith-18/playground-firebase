@@ -23,10 +23,10 @@ export default function CreateEventScreen({ navigation, route }) {
   const [time, setTime] = useState('');
 
   useEffect(() => {
-    if(route?.params?.selectedLocation) {
+    if (route?.params?.selectedLocation) {
       setLocation(route.params.selectedLocation);
     }
-  },[route?.params?.selectedLocation]);
+  }, [route?.params?.selectedLocation]);
 
   const handleCreateEvent = async () => {
     if (!title || !location || !description) {
@@ -34,10 +34,15 @@ export default function CreateEventScreen({ navigation, route }) {
       return;
     }
 
+    const enrichedLocation = {
+      ...location,
+      name: location.name || `Lat: ${location.latitude.toFixed(4)}, Lng: ${location.longitude.toFixed(4)}`
+    };
+
     try {
       await addDoc(collection(db, 'events'), {
         title,
-        location,
+        location: enrichedLocation,
         description,
         date,
         time,
