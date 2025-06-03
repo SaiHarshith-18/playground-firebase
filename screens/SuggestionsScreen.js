@@ -1,8 +1,24 @@
 // SuggestionsSection.js
-import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, SafeAreaView } from 'react-native';
-import { collection, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native';
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+} from 'firebase/firestore';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { db } from '../firebaseConfig';
 import { AuthContext } from '../contexts/AuthContext';
 
@@ -13,54 +29,138 @@ export default function SuggestionsSection() {
   const { user } = useContext(AuthContext);
   const navigation = useNavigation();
 
-  useEffect(() => {
+  useFocusEffect(
+    useCallback(() => {
     const fetchUsers = async () => {
       try {
         const snapshot = await getDocs(collection(db, 'users'));
-        const allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const currentUser = allUsers.find(u => u.id === user?.uid);
-        const rest = allUsers.filter(u => u.id !== user?.uid);
+        const allUsers = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const currentUser = allUsers.find((u) => u.id === user?.uid);
+        const rest = allUsers.filter((u) => u.id !== user?.uid);
         setLinkedUsers(currentUser?.friends || []);
         setUsers(rest);
       } catch (error) {
         console.error('Error fetching users:', error);
       }
     };
-    fetchUsers();
-  }, [user]);
-
+    if(user?.uid) fetchUsers();
+  }, [user?.uid])
+)
   const handleAddFriend = async (friendId) => {
-    try {
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
-        friends: arrayUnion(friendId),
-      });
-      setLinkedUsers(prev => [...prev, friendId]);
-    } catch (err) {
-      console.error('Error linking user:', err);
-    }
+  try {
+    const userRef = doc(db, 'users', user.uid);
+    const friendRef = doc(db, 'users', friendId);
+
+    await updateDoc(userRef, {
+      sentRequests: arrayUnion(friendId),
+    });
+
+    await updateDoc(friendRef, {
+      receivedRequests: arrayUnion(user.uid),
+    });
+
+    // ✅ Update local UI immediately
+    setUsers(prev =>
+      prev.map(u =>
+        u.id === friendId
+          ? {
+              ...u,
+              receivedRequests: [...(u.receivedRequests || []), user.uid],
+            }
+          : u
+      )
+    );
+  } catch (err) {
+    console.error('Error sending request:', err);
+  }
+};
+
+
+const handleAcceptRequest = async (friendId) => {
+  try {
+    const userRef = doc(db, 'users', user.uid);
+    const friendRef = doc(db, 'users', friendId);
+
+    await updateDoc(userRef, {
+      friends: arrayUnion(friendId),
+      receivedRequests: arrayRemove(friendId),
+    });
+
+    await updateDoc(friendRef, {
+      friends: arrayUnion(user.uid),
+      sentRequests: arrayRemove(user.uid),
+    });
+
+    setLinkedUsers((prev) => [...prev, friendId]);
+  } catch (err) {
+    console.error('Error accepting request:', err);
+  }
+};
+
+
+
+  const handleMessage = (friend) => {
+    navigation.navigate('Chat', { recipient: { ...friend, uid: friend.id } });
   };
 
   const renderFriend = ({ item }) => {
-    const isLinked = linkedUsers.includes(item.id);
+    const currentUserId = user?.uid;
+const isFriend = linkedUsers.includes(item.id);
+const hasSentRequest = item?.receivedRequests?.includes(currentUserId); // Correct!
+const hasReceivedRequest = item?.sentRequests?.includes(currentUserId);
+
+let actionButton;
+if (isFriend) {
+  actionButton = (
+    <TouchableOpacity
+      style={[styles.friendAddButton, { backgroundColor: '#ccc' }]}
+      onPress={() => handleMessage(item)}
+    >
+      <Text style={styles.addButtonText}>Message</Text>
+    </TouchableOpacity>
+  );
+} else if (hasSentRequest) {
+  actionButton = (
+    <View style={[styles.friendAddButton, { backgroundColor: '#999' }]}>
+      <Text style={styles.addButtonText}>Request Sent</Text>
+    </View>
+  );
+} else if (hasReceivedRequest) {
+  actionButton = (
+    <TouchableOpacity
+      style={[styles.friendAddButton, { backgroundColor: '#4CAF50' }]}
+      onPress={() => handleAcceptRequest(item.id)}
+    >
+      <Text style={styles.addButtonText}>Accept</Text>
+    </TouchableOpacity>
+  );
+} else {
+  actionButton = (
+    <TouchableOpacity
+      style={styles.friendAddButton}
+      onPress={() => handleAddFriend(item.id)}
+    >
+      <Text style={styles.addButtonText}>Add</Text>
+    </TouchableOpacity>
+  );
+}
+
+
     return (
       <View style={styles.friendCard}>
-        <Image source={{ uri: item.avatar || 'https://randomuser.me/api/portraits/lego/1.jpg' }} style={styles.friendAvatar} />
+        {item.avatar ? (
+          <Image
+            source={{ uri: item.avatar }}
+            style={styles.friendAvatar}
+          />
+        ) : (
+          <Ionicons name="person-circle-outline" size={50} color="grey" style={styles.friendAvatar} />
+        )}
         <View style={styles.friendInfo}>
           <Text style={styles.friendName}>{item.fullName || 'Unnamed'}</Text>
           <Text style={styles.friendAbout}>{item.about || 'No bio available'}</Text>
         </View>
-        {isLinked ? (
-          <TouchableOpacity
-            style={[styles.friendAddButton, { backgroundColor: '#ccc' }]}
-            onPress={() => navigation.navigate('Chat', { recipient: item })}>
-            <Text style={styles.addButtonText}>Message</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.friendAddButton} onPress={() => handleAddFriend(item.id)}>
-            <Text style={styles.addButtonText}>Add</Text>
-          </TouchableOpacity>
-        )}
+        {actionButton}
       </View>
     );
   };
@@ -70,7 +170,6 @@ export default function SuggestionsSection() {
       <View style={styles.container}>
         <Text style={styles.sectionTitle}>Suggestions</Text>
 
-        {/* Tabs */}
         <View style={styles.tabs}>
           {['Friends', 'Squad'].map((t) => (
             <TouchableOpacity key={t} onPress={() => setTab(t)}>
