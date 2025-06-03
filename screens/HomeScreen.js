@@ -13,15 +13,19 @@ import * as Location from "expo-location";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { AuthContext } from '../contexts/AuthContext';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 export default function HomeScreen() {
   const { user } = useContext(AuthContext);
   const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profileImage, setProfileImage] = useState(null);
+
+  const navigation = useNavigation();
 
   useFocusEffect(
     useCallback(() => {
@@ -49,7 +53,7 @@ export default function HomeScreen() {
           setProfileImage(userSnap.data().avatar);
         } else {
           setProfileImage(null);
-      }
+        }
       }
       setLoading(false);
     };
@@ -111,6 +115,25 @@ export default function HomeScreen() {
     longitudeDelta: 0.01,
   };
 
+  const handleCreateEvent = async () => {
+    try {
+      const eventRef = await addDoc(collection(db, 'events'), {
+        title,
+        location,
+        description,
+        date,
+        time,
+        createdBy: user.uid,
+        attendees: [user.uid],
+        createdAt: serverTimestamp(),
+      });
+      Alert.alert('Success', 'Event Created!');
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error creating event:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}> 
       <View style={styles.container}>
@@ -151,8 +174,8 @@ export default function HomeScreen() {
         </View>
 
         {/* Plus Icon */}
-        <TouchableOpacity style={styles.plusButton}>
-          <Feather name="plus" size={38} color="orange" />
+        <TouchableOpacity style={styles.plusButton} onPress={() => navigation.navigate('CreateEvent')}>
+          <Feather name="plus" size={38} color="orange"/>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
