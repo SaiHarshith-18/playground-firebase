@@ -213,7 +213,6 @@ export default function LocationPicker({ navigation }) {
           }
         }}
       >
-        {console.log('Selected Location:', selectedLocation)}
         {selectedLocation?.latitude && selectedLocation?.longitude ? (
           <Marker
             coordinate={{
