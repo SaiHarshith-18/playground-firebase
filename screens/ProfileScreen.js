@@ -20,11 +20,14 @@ import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
 import { AuthContext } from '../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
+import UserEventList from './UserEventList';
 
 const screenWidth = Dimensions.get('window').width;
 const ITEM_MARGIN = 4;
 const NUM_COLUMNS = 3;
 const ITEM_SIZE = (screenWidth - (ITEM_MARGIN * (NUM_COLUMNS + 1))) / NUM_COLUMNS;
+
+const IMGUR_CLIENT_ID = 'abc2a992e4db00a';
 
 export default function ProfileScreen() {
   const { user } = useContext(AuthContext);
@@ -35,7 +38,7 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [media, setMedia] = useState([{ id: 'add' }]);
 
- useFocusEffect(
+  useFocusEffect(
     React.useCallback(() => {
       const fetchProfile = async () => {
         if (!user?.uid) return;
@@ -100,13 +103,42 @@ export default function ProfileScreen() {
     if (!result.canceled) {
       const uri = result.assets[0].uri;
       try {
+        const imgurUrl = await uploadToImgur(uri);  // Upload to Imgur
         const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, { avatar: uri });
-        setProfileData(prev => ({ ...prev, avatar: uri }));
+        await updateDoc(userRef, { avatar: imgurUrl });
+        setProfileData(prev => ({ ...prev, avatar: imgurUrl }));
       } catch (err) {
         console.error('Error updating avatar:', err);
+        Alert.alert('Error', 'Failed to upload image');
       }
     }
+  };
+
+
+  const uploadToImgur = async (uri) => {
+    const base64Img = await fetch(uri)
+      .then(res => res.blob())
+      .then(blob => new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(blob);
+      }));
+
+    const response = await fetch('https://api.imgur.com/3/image', {
+      method: 'POST',
+      headers: {
+        Authorization: `Client-ID ${IMGUR_CLIENT_ID}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        image: base64Img,
+        type: 'base64',
+      }),
+    });
+
+    const result = await response.json();
+    if (result.success) return result.data.link;
+    throw new Error('Image upload failed');
   };
 
   const addNewMedia = async () => {
@@ -122,13 +154,19 @@ export default function ProfileScreen() {
 
     if (!result.canceled) {
       const uri = result.assets[0].uri;
-      Alert.prompt('Add caption', "What's on your mind?", async (captionText) => {
-        const newPost = { id: Date.now().toString(), url: uri, caption: captionText || '', createdAt: Date.now() };
-        const updatedMedia = [newPost, ...media.filter(item => item.id !== 'add')];
-        const sortedMedia = updatedMedia.sort((a, b) => b.createdAt - a.createdAt);
-        setMedia([{ id: 'add' }, ...sortedMedia]);
-        await updateDoc(doc(db, 'users', user.uid), { media: sortedMedia });
-      });
+      try {
+        const imgurUrl = await uploadToImgur(uri);  // Upload to Imgur
+        Alert.prompt('Add caption', "What's on your mind?", async (captionText) => {
+          const newPost = { id: Date.now().toString(), url: imgurUrl, caption: captionText || '', createdAt: Date.now() };
+          const updatedMedia = [newPost, ...media.filter(item => item.id !== 'add')];
+          const sortedMedia = updatedMedia.sort((a, b) => b.createdAt - a.createdAt);
+          setMedia([{ id: 'add' }, ...sortedMedia]);
+          await updateDoc(doc(db, 'users', user.uid), { media: sortedMedia });
+        });
+      } catch (err) {
+        console.error('Image upload failed:', err);
+        Alert.alert('Error', 'Image upload failed');
+      }
     }
   };
 
@@ -234,6 +272,8 @@ export default function ProfileScreen() {
             </View>
           ))}
         </ScrollView>
+
+        <UserEventList />
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Log Out</Text>
