@@ -19,6 +19,8 @@ import { Ionicons } from '@expo/vector-icons';
 export default function CreateEventScreen({ navigation, route }) {
   const { user } = useContext(AuthContext);
   const [title, setTitle] = useState('');
+  const [gameType, setGameType] = useState('');
+  const [role, setRole] = useState('');
   const [location, setLocation] = useState(null);
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
@@ -100,6 +102,18 @@ export default function CreateEventScreen({ navigation, route }) {
           placeholder="Event Title"
           value={title}
           onChangeText={setTitle}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Game Type"
+          value={gameType}
+          onChangeText={setGameType}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Role"
+          value={role}
+          onChangeText={setRole}
           style={styles.input}
         />
         <TouchableOpacity onPress={openLocationPicker} style={styles.locationInput}>
