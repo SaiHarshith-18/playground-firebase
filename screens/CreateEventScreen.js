@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, use } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   View,
   TextInput,
@@ -8,7 +8,9 @@ import {
   SafeAreaView,
   Text,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { AuthContext } from '../contexts/AuthContext';
@@ -17,10 +19,13 @@ import { Ionicons } from '@expo/vector-icons';
 export default function CreateEventScreen({ navigation, route }) {
   const { user } = useContext(AuthContext);
   const [title, setTitle] = useState('');
-  const [location, setLocation] = useState(null); // expecting object { latitude, longitude, name }
+  const [location, setLocation] = useState(null);
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   useEffect(() => {
     if (route?.params?.selectedLocation) {
@@ -29,8 +34,8 @@ export default function CreateEventScreen({ navigation, route }) {
   }, [route?.params?.selectedLocation]);
 
   const handleCreateEvent = async () => {
-    if (!title || !location || !description) {
-      Alert.alert('Validation', 'Please fill in all required fields');
+    if (!title || !location || !description || !date || !time) {
+      Alert.alert('Validation', 'Please fill in all fields');
       return;
     }
 
@@ -51,7 +56,7 @@ export default function CreateEventScreen({ navigation, route }) {
         createdAt: serverTimestamp(),
       });
       Alert.alert('Success', 'Event Created!');
-      navigation.goBack();
+      navigation.navigate('MainApp', { screen: 'Profile' });
     } catch (error) {
       console.error('Error creating event:', error);
       Alert.alert('Error', 'Failed to create event');
@@ -60,6 +65,32 @@ export default function CreateEventScreen({ navigation, route }) {
 
   const openLocationPicker = () => {
     navigation.navigate('LocationPicker');
+  };
+
+  const handleDateChange = (event, newDate) => {
+    if (Platform.OS === 'ios') {
+      setSelectedDate(newDate || selectedDate); // keep selectedDate until user confirms
+    } else {
+      setShowDatePicker(false);
+      if (newDate) {
+        const formatted = newDate.toLocaleDateString('en-GB').split('/').reverse().join('-');
+        setDate(formatted);
+      }
+    }
+  };
+
+
+
+  const handleTimeChange = (event, selectedTime) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      const hours = selectedTime.getHours();
+      const minutes = selectedTime.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const hour12 = hours % 12 || 12;
+      const formatted = `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+      setTime(formatted);
+    }
   };
 
   return (
@@ -83,18 +114,43 @@ export default function CreateEventScreen({ navigation, route }) {
           onChangeText={setDescription}
           style={styles.input}
         />
-        <TextInput
-          placeholder="Date (YYYY-MM-DD)"
-          value={date}
-          onChangeText={setDate}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Time (e.g. 6:30 PM)"
-          value={time}
-          onChangeText={setTime}
-          style={styles.input}
-        />
+        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
+          <Text>{date ? date : 'Select Date (DD-MM-YYYY)'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.input}>
+          <Text>{time ? time : 'Select Time (e.g. 6:30 PM)'}</Text>
+        </TouchableOpacity>
+
+        {showDatePicker && Platform.OS === 'ios' && (
+          <View style={{ backgroundColor: '#fff', padding: 10, borderRadius: 10, marginTop: 10 }}>
+            <DateTimePicker
+              value={selectedDate}
+              mode="date"
+              display="spinner"
+              onChange={handleDateChange}
+            />
+            <Button
+              title="Confirm"
+              onPress={() => {
+                const formatted = selectedDate.toLocaleDateString('en-GB').split('/').reverse().join('-');
+                setDate(formatted);
+                setShowDatePicker(false);
+              }}
+            />
+          </View>
+        )}
+
+
+        {showTimePicker && (
+          <DateTimePicker
+            value={new Date()}
+            mode="time"
+            display="spinner"
+            is24Hour={false}
+            onChange={handleTimeChange}
+          />
+        )}
+
         <Button title="Create Event" onPress={handleCreateEvent} />
       </View>
     </SafeAreaView>
