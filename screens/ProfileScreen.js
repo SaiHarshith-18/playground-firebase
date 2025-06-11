@@ -20,7 +20,8 @@ import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
 import { AuthContext } from '../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
-import UserEventList from './UserEventList';
+import UserEventList from './Events/UserEventList';
+import TodayUserEvents from './Events/TodayUserEvents'; 
 
 const screenWidth = Dimensions.get('window').width;
 const ITEM_MARGIN = 4;
@@ -178,113 +179,121 @@ export default function ProfileScreen() {
   const posts = media.filter(item => item.id !== 'add').length;
   const mediaWithoutAdd = media.filter(item => item.id !== 'add');
 
-  if (loading) return <ActivityIndicator size="large" style={{ marginTop: 100 }} />;
+ if (loading) return <ActivityIndicator size="large" style={{ marginTop: 100 }} />;
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <View style={styles.editIcons}>
-          {editMode && (
-            <>
-              <TouchableOpacity onPress={handleSave}><Ionicons name="checkmark-done" size={26} color="#4CAF50" /></TouchableOpacity>
-              <TouchableOpacity onPress={() => setEditMode(false)}><Ionicons name="close" size={26} color="#f00" /></TouchableOpacity>
-            </>
-          )}
-        </View>
-
-        <View style={styles.profileRow}>
-          <View style={styles.avatarWrapper}>
-            {avatar ? (
-              <Image source={{ uri: avatar }} style={styles.avatar} />
-            ) : (
-              <View style={styles.defaultAvatarWrapper}>
-                <Ionicons name="person-circle-outline" size={80} color="#ccc" />
-              </View>
-            )}
+      <View style={styles.inner}>
+        <View>
+          <View style={styles.editIcons}>
             {editMode && (
-              <TouchableOpacity style={styles.addPhotoIcon} onPress={pickImage}>
-                <Feather name="plus" size={18} color="#fff" />
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity onPress={handleSave}><Ionicons name="checkmark-done" size={26} color="#4CAF50" /></TouchableOpacity>
+                <TouchableOpacity onPress={() => setEditMode(false)}><Ionicons name="close" size={26} color="#f00" /></TouchableOpacity>
+              </>
             )}
           </View>
 
-          <View style={styles.statsRow}>
-            {[{ label: 'Posts', value: posts }, { label: 'Followers', value: followers }, { label: 'Following', value: following }].map(stat => (
-              <View key={stat.label} style={styles.statBox}>
-                <Text style={styles.statNumber}>{stat.value}</Text>
-                <Text style={styles.statLabel}>{stat.label}</Text>
+          <View style={styles.profileRow}>
+            <View style={styles.avatarWrapper}>
+              {avatar ? (
+                <Image source={{ uri: avatar }} style={styles.avatar} />
+              ) : (
+                <View style={styles.defaultAvatarWrapper}>
+                  <Ionicons name="person-circle-outline" size={80} color="#ccc" />
+                </View>
+              )}
+              {editMode && (
+                <TouchableOpacity style={styles.addPhotoIcon} onPress={pickImage}>
+                  <Feather name="plus" size={18} color="#fff" />
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={styles.statsRow}>
+              {[{ label: 'Posts', value: posts }, { label: 'Followers', value: followers }, { label: 'Following', value: following }].map(stat => (
+                <View key={stat.label} style={styles.statBox}>
+                  <Text style={styles.statNumber}>{stat.value}</Text>
+                  <Text style={styles.statLabel}>{stat.label}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.bioSection}>
+            {editMode ? (
+              <>
+                <TextInput style={styles.inputName} value={formData.fullName} onChangeText={(text) => setFormData({ ...formData, fullName: text })} />
+                <TextInput style={styles.inputAbout} value={formData.about} onChangeText={(text) => setFormData({ ...formData, about: text })} multiline placeholder="Write something about yourself..." />
+              </>
+            ) : (
+              <>
+                <Text style={styles.name}>{fullName}</Text>
+                <Text style={styles.aboutText}>{about || 'No bio added yet.'}</Text>
+              </>
+            )}
+          </View>
+          {!editMode && (
+            <View style={styles.profileActions}>
+              <TouchableOpacity style={styles.editProfileBtn} onPress={() => setEditMode(true)}>
+                <Text style={styles.editProfileText}>Edit Profile</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate('Suggestions')}>
+                <Ionicons name="people-outline" size={26} color="#FF822B" />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Photos and Videos</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('AllMedia')}>
+              <Text style={styles.seeAllText}>See all</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.mediaPreviewRow}>
+            <TouchableOpacity onPress={addNewMedia} style={styles.previewAddBox}>
+              <Ionicons name="add" size={28} color="#FF822B" />
+            </TouchableOpacity>
+            {mediaWithoutAdd.map((item) => (
+              <View key={item.id} style={{ position: 'relative', marginRight: 10 }}>
+                <Image source={{ uri: item.url }} style={styles.previewImage} />
+                <TouchableOpacity
+                  style={styles.threeDots}
+                  onPress={() =>
+                    navigation.navigate('PostDetail', {
+                      post: item,
+                      onDelete: async (id) => handleDeletePost(id),
+                      onEdit: async (post) => handleEditPost(post),
+                    })
+                  }
+                >
+                  <Feather name="more-vertical" size={20} color="#fff" />
+                </TouchableOpacity>
               </View>
             ))}
           </View>
-        </View>
 
-        <View style={styles.bioSection}>
-          {editMode ? (
-            <>
-              <TextInput style={styles.inputName} value={formData.fullName} onChangeText={(text) => setFormData({ ...formData, fullName: text })} />
-              <TextInput style={styles.inputAbout} value={formData.about} onChangeText={(text) => setFormData({ ...formData, about: text })} multiline placeholder="Write something about yourself..." />
-            </>
-          ) : (
-            <>
-              <Text style={styles.name}>{fullName}</Text>
-              <Text style={styles.aboutText}>{about || 'No bio added yet.'}</Text>
-            </>
-          )}
-        </View>
-        {!editMode && (
-          <View style={{ flexDirection: 'row', gap: 15, alignItems: 'center' }}>
-            <TouchableOpacity style={styles.editProfileBtn} onPress={() => setEditMode(true)}>
-              <Text style={styles.editProfileText}>Edit Profile</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Suggestions')}>
-              <Ionicons name="people-outline" size={26} color="#FF822B" />
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Today's Events</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('AllUserEvents')}>
+              <Text style={styles.seeAllText}>See all</Text>
             </TouchableOpacity>
           </View>
-        )}
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Photos and Videos</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('AllMedia')}>
-            <Text style={styles.seeAllText}>See all</Text>
-          </TouchableOpacity>
+          <TodayUserEvents navigation={navigation} />
         </View>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.mediaPreviewRow}>
-          <TouchableOpacity onPress={addNewMedia} style={styles.previewAddBox}>
-            <Ionicons name="add" size={28} color="#FF822B" />
-          </TouchableOpacity>
-
-          {mediaWithoutAdd.map((item) => (
-            <View key={item.id} style={{ position: 'relative', marginRight: 10 }}>
-              <Image source={{ uri: item.url }} style={styles.previewImage} />
-              <TouchableOpacity
-                style={styles.threeDots}
-                onPress={() =>
-                  navigation.navigate('PostDetail', {
-                    post: item,
-                    onDelete: async (id) => handleDeletePost(id),
-                    onEdit: async (post) => handleEditPost(post),
-                  })
-                }
-              >
-                <Feather name="more-vertical" size={20} color="#fff" />
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-
-        <UserEventList />
-
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Log Out</Text>
-        </TouchableOpacity>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', paddingHorizontal: 15 },
+  container: { flex: 1, backgroundColor: '#fff' },
+  inner: {
+    flex: 1,
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    // paddingVertical: 18,
+  },
   editIcons: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10, marginBottom: 10, gap: 15 },
   profileRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
   avatar: { width: 90, height: 90, borderRadius: 45, borderWidth: 2, borderColor: '#ccc' },
@@ -308,15 +317,14 @@ const styles = StyleSheet.create({
   aboutText: { fontSize: 14, color: '#444', marginTop: 4 },
   inputName: { fontSize: 16, fontWeight: 'bold', borderBottomWidth: 1, borderColor: '#ccc', marginBottom: 4 },
   inputAbout: { fontSize: 14, borderWidth: 1, borderColor: '#ccc', padding: 8, borderRadius: 6, minHeight: 40, textAlignVertical: 'top' },
-  editProfileBtn: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, alignItems: 'center', width: '85%', marginTop: 12 },
+  profileActions: { flexDirection: 'row', gap: 15, alignItems: 'center', marginTop: 12 },
+  editProfileBtn: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, alignItems: 'center', minWidth: '85%' },
   editProfileText: { fontSize: 14, fontWeight: 'bold', color: '#333' },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 4, marginBottom: 8, marginTop: 20 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 4, marginBottom: 8, marginTop: 18 },
   sectionTitle: { fontWeight: 'bold', fontSize: 16 },
   seeAllText: { color: '#FF822B', fontSize: 14 },
   mediaPreviewRow: { flexDirection: 'row', gap: 12, marginVertical: 10, marginLeft: 4 },
   previewAddBox: { width: 110, height: 110, borderWidth: 2, borderColor: '#FF822B', borderStyle: 'dashed', borderRadius: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
   previewImage: { width: 110, height: 110, borderRadius: 10 },
   threeDots: { position: 'absolute', top: 6, right: 6, backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: 12, padding: 2 },
-  logoutButton: { backgroundColor: '#FF3B30', padding: 14, borderRadius: 8, alignItems: 'center', marginVertical: 20 },
-  logoutButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 });
