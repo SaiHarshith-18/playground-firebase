@@ -22,13 +22,14 @@ import { AuthContext } from '../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import UserEventList from './Events/UserEventList';
 import TodayUserEvents from './Events/TodayUserEvents'; 
+import { IMGUR_CLIENT_ID } from '@env';
 
 const screenWidth = Dimensions.get('window').width;
 const ITEM_MARGIN = 4;
 const NUM_COLUMNS = 3;
 const ITEM_SIZE = (screenWidth - (ITEM_MARGIN * (NUM_COLUMNS + 1))) / NUM_COLUMNS;
 
-const IMGUR_CLIENT_ID = 'abc2a992e4db00a';
+const IMGUR_CLIENT_ID = IMGUR_CLIENT_ID;
 
 export default function ProfileScreen() {
   const { user } = useContext(AuthContext);
