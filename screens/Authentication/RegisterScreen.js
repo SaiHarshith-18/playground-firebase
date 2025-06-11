@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { db, auth } from '../firebaseConfig';
+import { db, auth } from '../../firebaseConfig';
 
 export default function RegisterScreen({ navigation }) {
   const [email, setEmail]     = useState('');

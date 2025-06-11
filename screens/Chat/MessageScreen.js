@@ -15,8 +15,8 @@ import {
   updateDoc,
   arrayUnion,
 } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
-import { AuthContext } from '../contexts/AuthContext';
+import { db } from '../../firebaseConfig';
+import { AuthContext } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 

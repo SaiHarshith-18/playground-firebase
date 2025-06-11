@@ -12,8 +12,8 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
-import { AuthContext } from '../contexts/AuthContext';
+import { db } from '../../firebaseConfig';
+import { AuthContext } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function CreateEventScreen({ navigation, route }) {
@@ -70,15 +70,12 @@ export default function CreateEventScreen({ navigation, route }) {
   };
 
   const handleDateChange = (event, newDate) => {
-    if (Platform.OS === 'ios') {
-      setSelectedDate(newDate || selectedDate); // keep selectedDate until user confirms
-    } else {
-      setShowDatePicker(false);
-      if (newDate) {
-        const formatted = newDate.toLocaleDateString('en-GB').split('/').reverse().join('-');
-        setDate(formatted);
-      }
+    if (event.type === 'set' && newDate) {
+      setSelectedDate(newDate);
+      const formatted = newDate.toLocaleDateString('en-GB').split('/').reverse().join('-');
+      setDate(formatted);
     }
+    setShowDatePicker(false);
   };
 
 
@@ -136,22 +133,12 @@ export default function CreateEventScreen({ navigation, route }) {
         </TouchableOpacity>
 
         {showDatePicker && Platform.OS === 'ios' && (
-          <View style={{ backgroundColor: '#fff', padding: 10, borderRadius: 10, marginTop: 10 }}>
-            <DateTimePicker
-              value={selectedDate}
-              mode="date"
-              display="spinner"
-              onChange={handleDateChange}
-            />
-            <Button
-              title="Confirm"
-              onPress={() => {
-                const formatted = selectedDate.toLocaleDateString('en-GB').split('/').reverse().join('-');
-                setDate(formatted);
-                setShowDatePicker(false);
-              }}
-            />
-          </View>
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display="spinner"
+            onChange={handleDateChange}
+          />
         )}
 
 

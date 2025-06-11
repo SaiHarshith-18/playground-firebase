@@ -4,10 +4,10 @@ import { View, TouchableOpacity, Image, StyleSheet, Platform } from 'react-nativ
 import { Ionicons } from '@expo/vector-icons';
 
 // Screens
-import HomeScreen from '../screens/HomeScreen';
+import HomeScreen from '../screens/Home/HomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import MessageScreen from '../screens/MessageScreen';
-import NotificationScreen from '../screens/NotificationScreen';
+import MessageScreen from '../screens/Chat/MessageScreen';
+import SettingScreen from '../screens/SettingScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -74,12 +74,12 @@ export default function BottomTabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Notifications"
-        component={NotificationScreen}
+        name="Settings"
+        component={SettingScreen}
         options={{
           tabBarIcon: ({ focused }) => (
             <View style={styles.iconContainer}>
-              <Ionicons name="notifications-outline" size={30} color={focused ? '#FF822B' : 'gray'} />
+              <Ionicons name="settings-outline" size={30} color={focused ? '#FF822B' : 'gray'} />
               {focused && <View style={styles.bottomLine} />}
             </View>
           ),

@@ -2,9 +2,9 @@ import React, { useContext } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AuthContext } from '../contexts/AuthContext';
+import { AuthContext } from '../../contexts/AuthContext';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { db } from '../../firebaseConfig';
 import * as ImagePicker from 'expo-image-picker';
 
 export default function PostDetailScreen({ route, navigation }) {

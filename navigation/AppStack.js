@@ -4,15 +4,17 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AuthProvider, AuthContext } from '../contexts/AuthContext';
-import LoginScreen from '../screens/LoginScreen';
-import RegisterScreen from '../screens/RegisterScreen';
-import PostDetailScreen from '../screens/PostDetailScreen';
-import SuggestionsScreen from '../screens/SuggestionsScreen';
+import LoginScreen from '../screens/Authentication/LoginScreen';
+import RegisterScreen from '../screens/Authentication/RegisterScreen';
+import PostDetailScreen from '../screens/Media/PostDetailScreen';
+import SuggestionsScreen from '../screens/Chat/SuggestionsScreen';
 import BottomTabNavigator from './BottomTabNavigator';
-import ChatScreen from '../screens/ChatScreen';
-import AllMediaScreen from '../screens/AllMediaScreen';
-import CreateEventScreen from '../screens/CreateEventScreen';
-import LocationPicker from '../screens/LocationPicker';
+import ChatScreen from '../screens/Chat/ChatScreen';
+import AllMediaScreen from '../screens/Media/AllMediaScreen';
+import CreateEventScreen from '../screens/Events/CreateEventScreen';
+import LocationPicker from '../screens/Events/LocationPicker';
+import UserEventList from '../screens/Events/UserEventList';
+import Notification from '../screens/NotificationScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -33,6 +35,8 @@ export default function AppNav() {
               <Stack.Screen name="AllMedia" component={AllMediaScreen} />
               <Stack.Screen name="CreateEvent" component={CreateEventScreen} />
               <Stack.Screen name="LocationPicker" component={LocationPicker} />
+              <Stack.Screen name="AllUserEvents" component={UserEventList} />
+              <Stack.Screen name="Notifications" component={Notification} />
             </>
           )
           : (

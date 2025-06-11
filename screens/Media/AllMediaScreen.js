@@ -1,9 +1,9 @@
 import React, { useContext, useState, useCallback } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
-import { AuthContext } from '../contexts/AuthContext';
+import { AuthContext } from '../../contexts/AuthContext';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { db } from '../../firebaseConfig';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function AllMediaScreen({ navigation }) {

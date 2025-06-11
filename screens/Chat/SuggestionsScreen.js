@@ -19,8 +19,8 @@ import {
 } from 'firebase/firestore';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { db } from '../firebaseConfig';
-import { AuthContext } from '../contexts/AuthContext';
+import { db } from '../../firebaseConfig';
+import { AuthContext } from '../../contexts/AuthContext';
 
 export default function SuggestionsSection() {
   const [tab, setTab] = useState('Friends');

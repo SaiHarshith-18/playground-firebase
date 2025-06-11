@@ -5,8 +5,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
-import { AuthContext } from '../contexts/AuthContext';
+import { db } from '../../firebaseConfig';
+import { AuthContext } from '../../contexts/AuthContext';
 
 export default function ChatScreen({ route, navigation }) {
   const { recipient: chatUser } = route.params || {};

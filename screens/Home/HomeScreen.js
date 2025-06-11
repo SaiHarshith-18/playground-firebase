@@ -14,8 +14,8 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { doc, updateDoc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
-import { AuthContext } from '../contexts/AuthContext';
+import { db } from '../../firebaseConfig';
+import { AuthContext } from '../../contexts/AuthContext';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
