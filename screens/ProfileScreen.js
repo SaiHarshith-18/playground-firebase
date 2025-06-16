@@ -29,8 +29,6 @@ const ITEM_MARGIN = 4;
 const NUM_COLUMNS = 3;
 const ITEM_SIZE = (screenWidth - (ITEM_MARGIN * (NUM_COLUMNS + 1))) / NUM_COLUMNS;
 
-const IMGUR_CLIENT_ID = IMGUR_CLIENT_ID;
-
 export default function ProfileScreen() {
   const { user } = useContext(AuthContext);
   const navigation = useNavigation();
