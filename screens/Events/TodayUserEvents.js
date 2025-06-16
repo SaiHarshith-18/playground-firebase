@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Image, Platform, Linking } from 'react-native';
 import { db } from '../../firebaseConfig';
+import { doc, deleteDoc } from 'firebase/firestore';
 import { AuthContext } from '../../contexts/AuthContext';
 import { collection, getDocs } from 'firebase/firestore';
 import { parseEventDateTime } from './UserEventList';
@@ -10,6 +11,15 @@ export default function TodayUserEvents({ navigation }) {
   const { user } = useContext(AuthContext);
   const [todayEvents, setTodayEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+
+    const handleEditEvent = (event) => {
+    navigation.navigate('CreateEvent', { event, isEdit: true });
+  };
+
+  const handleDeleteEvent = async (event) => {
+    await deleteDoc(doc(db, 'events', event.id));
+    // Optionally refresh the list here
+  };
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -75,7 +85,11 @@ export default function TodayUserEvents({ navigation }) {
         <EventCard
           key={event.id}
           event={event}
+          userId={user.uid}
           onLocationPress={openMap}
+          onEdit={handleEditEvent}
+          onDelete={handleDeleteEvent}
+          onViewDetails={(selectedEvent) => navigation.navigate('EventDetails', { event: selectedEvent, userId: user.uid })}
         />
       ))}
     </View>
