@@ -1,5 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 export function parseEventDateTime(dateStr, timeStr) {
   if (!dateStr || !timeStr) return new Date('invalid');
@@ -16,10 +18,15 @@ export function parseEventDateTime(dateStr, timeStr) {
   return new Date(isoDate);
 }
 
-export function EventCard({ event, onLocationPress }) {
+export function EventCard({ event, onLocationPress, userId, onViewDetails }) {
   const eventDate = parseEventDateTime(event.date, event.time);
+  const isCreator = event.createdBy === userId;
   return (
-    <View style={styles.eventCard}>
+    <Pressable
+      onPress={() => onViewDetails(event)}
+      android_ripple={{ color: '#eee' }}
+      style={styles.eventCard}
+    >
       <View style={styles.dateBlock}>
         <Text style={styles.day}>{eventDate.getDate()}</Text>
         <Text style={styles.month}>
@@ -36,11 +43,28 @@ export function EventCard({ event, onLocationPress }) {
         </TouchableOpacity>
         <Text style={styles.eventDescription}>{event.description}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  actionRow: {
+    flexDirection: 'row',
+    marginTop: 8,
+    gap: 10,
+  },
+  actionBtn: {
+    backgroundColor: 'grey',
+    paddingVertical: 4,
+    paddingHorizontal: 14,
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  actionText: {
+    color: '#FF822B',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
   eventCard: {
     flexDirection: 'row',
     backgroundColor: '#fff',
@@ -59,8 +83,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 14,
   },
-  day: { fontSize: 18, fontWeight: 'bold', color: '#FF822B' },
-  month: { fontSize: 12, color: '#888', marginTop: -2 },
+  day: { fontSize: 24, fontWeight: 'bold', color: '#FF822B' },
+  month: { fontSize: 12, color: '#888', marginTop: 0 },
   eventContent: { flex: 1 },
   titleTimeRow: {
     flexDirection: 'row',
