@@ -11,13 +11,17 @@ import {
   Platform,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { Menu } from 'react-native-paper';
 
 export default function CreateEventScreen({ navigation, route }) {
   const { user } = useContext(AuthContext);
+ const editingEvent = route?.params?.event;
+  const isEdit = route?.params?.isEdit;
+
   const [title, setTitle] = useState('');
   const [gameType, setGameType] = useState('');
   const [role, setRole] = useState('');
@@ -28,6 +32,7 @@ export default function CreateEventScreen({ navigation, route }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [gameTypeMenuVisible, setGameTypeMenuVisible] = useState(false);
 
   useEffect(() => {
     if (route?.params?.selectedLocation) {
@@ -35,35 +40,22 @@ export default function CreateEventScreen({ navigation, route }) {
     }
   }, [route?.params?.selectedLocation]);
 
-  const handleCreateEvent = async () => {
-    if (!title || !location || !description || !date || !time) {
-      Alert.alert('Validation', 'Please fill in all fields');
-      return;
+  useEffect(() => {
+    if (editingEvent) {
+      setTitle(editingEvent.title || '');
+      setLocation(editingEvent.location || null);
+      setDescription(editingEvent.description || '');
+      setDate(editingEvent.date || '');
+      setTime(editingEvent.time || '');
+      setGameType(editingEvent.gameType || '');
+      setRole(editingEvent.role || '');
     }
+  }, [editingEvent]);
 
-    const enrichedLocation = {
-      ...location,
-      name: location.name || `Lat: ${location.latitude.toFixed(4)}, Lng: ${location.longitude.toFixed(4)}`
-    };
-
-    try {
-      await addDoc(collection(db, 'events'), {
-        title,
-        location: enrichedLocation,
-        description,
-        date,
-        time,
-        createdBy: user.uid,
-        attendees: [user.uid],
-        createdAt: serverTimestamp(),
-      });
-      Alert.alert('Success', 'Event Created!');
-      navigation.navigate('MainApp', { screen: 'Profile' });
-    } catch (error) {
-      console.error('Error creating event:', error);
-      Alert.alert('Error', 'Failed to create event');
-    }
-  };
+  const gameTypeOptions = [
+  "Football", "BasketBall", "Baseball", "Ice Hockey", "Soccer",
+  "Tennis", "Golf", "Auto Racing", "Wresting", "Lacrosse", "Other"
+];
 
   const openLocationPicker = () => {
     navigation.navigate('LocationPicker');
@@ -78,8 +70,6 @@ export default function CreateEventScreen({ navigation, route }) {
     setShowDatePicker(false);
   };
 
-
-
   const handleTimeChange = (event, selectedTime) => {
     setShowTimePicker(false);
     if (selectedTime) {
@@ -92,70 +82,120 @@ export default function CreateEventScreen({ navigation, route }) {
     }
   };
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <TextInput
-          placeholder="Event Title"
-          value={title}
-          onChangeText={setTitle}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Game Type"
-          value={gameType}
-          onChangeText={setGameType}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Role"
-          value={role}
-          onChangeText={setRole}
-          style={styles.input}
-        />
-        <TouchableOpacity onPress={openLocationPicker} style={styles.locationInput}>
-          <Ionicons name="location-outline" size={20} color="#FF822B" />
-          <Text style={styles.locationText}>
-            {location ? location.name : 'Choose Location'}
-          </Text>
-        </TouchableOpacity>
-        <TextInput
-          placeholder="Description"
-          value={description}
-          onChangeText={setDescription}
-          style={styles.input}
-        />
-        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
-          <Text>{date ? date : 'Select Date (DD-MM-YYYY)'}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.input}>
-          <Text>{time ? time : 'Select Time (e.g. 6:30 PM)'}</Text>
-        </TouchableOpacity>
+  const handleSubmit = async () => {
+    if (!title || !location || !description || !date || !time) {
+      Alert.alert('Validation', 'Please fill in all fields');
+      return;
+    }
+    try {
+      if (isEdit && editingEvent?.id) {
+        await updateDoc(doc(db, 'events', editingEvent.id), {
+          title, location, description, date, time, gameType, role,
+        });
+        // Fetch the updated event from Firestore
+        const updatedSnap = await getDoc(doc(db, 'events', editingEvent.id));
+        const updatedEvent = { id: editingEvent.id, ...updatedSnap.data() };
+        Alert.alert('Success', 'Event updated!');
+    } else {
+      await addDoc(collection(db, 'events'), {
+        title, location, description, date, time, gameType, role,
+        createdBy: user.uid,
+        attendees: [user.uid],
+        createdAt: serverTimestamp(),
+      });
+      Alert.alert('Success', 'Event Created!');
+    }
+   navigation.navigate('AllUserEvents');
+  } catch (error) {
+    Alert.alert('Error', 'Failed to save event');
+  }
+};
 
-        {showDatePicker && Platform.OS === 'ios' && (
-          <DateTimePicker
-            value={selectedDate}
-            mode="date"
-            display="spinner"
-            onChange={handleDateChange}
-          />
-        )}
+return (
+  <SafeAreaView style={styles.safeArea}>
+    <View style={styles.container}>
+      <TextInput
+        placeholder="Event Title"
+        value={title}
+        onChangeText={setTitle}
+        style={styles.input}
+      />
+      <Menu
+    visible={gameTypeMenuVisible}
+    onDismiss={() => setGameTypeMenuVisible(false)}
+    anchor={
+      <TouchableOpacity
+        style={[styles.input, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+        onPress={() => setGameTypeMenuVisible(true)}
+      >
+        <Text style={{ color: gameType ? '#111' : '#aaa' }}>
+          {gameType || 'Select Game Type'}
+        </Text>
+        <Ionicons name="chevron-down" size={18} color="#888" />
+      </TouchableOpacity>
+    }
+    contentStyle={{ backgroundColor: '#fff' }}
+  >
+    {gameTypeOptions.map(option => (
+      <Menu.Item
+        key={option}
+        onPress={() => {
+          setGameType(option);
+          setGameTypeMenuVisible(false);
+        }}
+        title={option}
+      />
+    ))}
+  </Menu>
+      <TextInput
+        placeholder="Role"
+        value={role}
+        onChangeText={setRole}
+        style={styles.input}
+      />
+      <TouchableOpacity onPress={openLocationPicker} style={styles.locationInput}>
+        <Ionicons name="location-outline" size={20} color="#FF822B" />
+        <Text style={styles.locationText}>
+          {location ? location.name : 'Choose Location'}
+        </Text>
+      </TouchableOpacity>
+      <TextInput
+        placeholder="Description"
+        value={description}
+        onChangeText={setDescription}
+        style={styles.input}
+      />
+      <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
+        <Text>{date ? date : 'Select Date (DD-MM-YYYY)'}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.input}>
+        <Text>{time ? time : 'Select Time (e.g. 6:30 PM)'}</Text>
+      </TouchableOpacity>
+
+      {showDatePicker && Platform.OS === 'ios' && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="date"
+          display="spinner"
+          onChange={handleDateChange}
+        />
+      )}
 
 
-        {showTimePicker && (
-          <DateTimePicker
-            value={new Date()}
-            mode="time"
-            display="spinner"
-            is24Hour={false}
-            onChange={handleTimeChange}
-          />
-        )}
+      {showTimePicker && (
+        <DateTimePicker
+          value={new Date()}
+          mode="time"
+          display="spinner"
+          is24Hour={false}
+          onChange={handleTimeChange}
+        />
+      )}
 
-        <Button title="Create Event" onPress={handleCreateEvent} />
-      </View>
-    </SafeAreaView>
-  );
+      <Button title={isEdit ? "Update Event" : "Create Event"} onPress={handleSubmit} />
+    </View>
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
