@@ -50,6 +50,10 @@ export default function UserEventList() {
   const [userLocation, setUserLocation] = useState(null);
   const [sortMenuVisible, setSortMenuVisible] = useState(false);
   const [filterMenuVisible, setFilterMenuVisible] = useState(false);
+  const [myEvents, setMyEvents] = useState([]);
+  const [exploreEvents, setExploreEvents] = useState([]);
+  const [explorePage, setExplorePage] = useState(1);
+  const EVENTS_PER_PAGE = 10;
   const [sortBy, setSortBy] = useState('dateAsc');
   const [filters, setFilters] = useState({
     distance: null,
@@ -64,6 +68,32 @@ export default function UserEventList() {
   useEffect(() => {
     if (filters.distance) fetchLocationAndFilter();
   }, [filters.distance]);
+
+  useEffect(() => {
+    if (events.length > 0) {
+      const filtered = filterEvents(events);
+      const sorted = sortEvents(filtered);
+
+      const mine = sorted.filter(
+        event => event.createdBy === user.uid || (event.attendees || []).includes(user.uid)
+      );
+      const explore = sorted.filter(
+        event => event.createdBy !== user.uid && !(event.attendees || []).includes(user.uid)
+      );
+
+      setMyEvents(mine);
+      setExploreEvents(explore);
+      setExplorePage(1); // Reset page on filter/sort/search change
+    }
+  }, [events, filters, sortBy, searchQuery]);
+
+  const paginatedExploreEvents = exploreEvents.slice(0, explorePage * EVENTS_PER_PAGE);
+
+  const handleLoadMore = () => {
+    if (paginatedExploreEvents.length < exploreEvents.length) {
+      setExplorePage(page => page + 1);
+    }
+  };
 
   const handleEditEvent = (event) => {
     navigation.navigate('CreateEvent', { event, isEdit: true });
@@ -179,34 +209,15 @@ export default function UserEventList() {
   if (loading) return <ActivityIndicator size="large" style={{ marginTop: 50 }} />;
 
   return (
-    <PaperProvider>
-      <SafeAreaView style={styles.wrapper}>
-        <View style={styles.wrapper}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.navigate('MainApp', { screen: 'Home' })}
-          >
-            <Ionicons name="arrow-back" size={24} color="#FF822B" />
-            <Text style={styles.backText}>Back to Home</Text>
-          </TouchableOpacity>
-          <View style={styles.iconBar}>
-            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FF822B' }}>Events</Text>
-            <View style={{ flex: 1 }} />
-            <TouchableOpacity onPress={() => setSortMenuVisible(true)}>
-              <Ionicons name="swap-vertical" size={24} color="#FF822B" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setFilterMenuVisible(true)}>
-              <MaterialCommunityIcons name="filter-variant" size={24} color="#FF822B" />
-            </TouchableOpacity>
-          </View>
-
-          <TextInput
-            style={styles.searchBar}
-            placeholder="Search by title, description, or location"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-
+  <PaperProvider>
+    <SafeAreaView style={styles.wrapper}>
+     <View style={styles.iconBar}>
+  <TextInput
+    style={styles.searchBar}
+    placeholder="Search events"
+    value={searchQuery}
+    onChangeText={setSearchQuery}
+  />
           <Menu
             visible={sortMenuVisible}
             onDismiss={() => setSortMenuVisible(false)}
@@ -326,24 +337,72 @@ export default function UserEventList() {
               right={() => <Ionicons name="close-circle" size={18} color="#FF822B" />}
             />
           </Menu>
+  <TouchableOpacity onPress={() => setSortMenuVisible(true)} style={styles.iconBtn}>
+    <Ionicons name="swap-vertical" size={24} color="#FF822B" />
+  </TouchableOpacity>
+  <TouchableOpacity onPress={() => setFilterMenuVisible(true)} style={styles.iconBtn}>
+    <MaterialCommunityIcons name="filter-variant" size={24} color="#FF822B" />
+  </TouchableOpacity>
+</View>
+      <ScrollView style={{ flex: 1 }}>
+        {/* My Events Section */}
+        <Text style={styles.sectionTitle}>My Events</Text>
+        {myEvents.length === 0 ? (
+          <View style={styles.emptyUserEvents}>
+            <Ionicons name="calendar-outline" size={48} color="#FF822B" style={{ marginBottom: 8 }} />
+            <Text style={styles.emptyText}>You haven't joined or created any events yet.</Text>
+            <TouchableOpacity
+              style={styles.createEventBtn}
+              onPress={() => navigation.navigate('CreateEvent')}
+            >
+              <Text style={styles.createEventBtnText}>+ Create Event</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          myEvents.map(event => (
+            <EventCard
+              key={event.id}
+              event={event}
+              userId={user.uid}
+              onLocationPress={openMap}
+              onEdit={handleEditEvent}
+              onDelete={handleDeleteEvent}
+              onViewDetails={(selectedEvent) =>
+                navigation.navigate('EventDetails', { event: selectedEvent, userId: user.uid })
+              }
+            />
+          ))
+        )}
 
-
-          <ScrollView style={styles.container}>
-            {filteredEvents.map(event => (
-              <EventCard
-                key={event.id}
-                event={event}
-                userId={user.uid}
-                onLocationPress={openMap}
-                onEdit={handleEditEvent}
-                onDelete={handleDeleteEvent}
-                onViewDetails={(selectedEvent) => navigation.navigate('EventDetails', { event: selectedEvent, userId: user.uid })}
-              />
-            ))}
-          </ScrollView>
-        </View>
-      </SafeAreaView>
-    </PaperProvider>
+        {/* Explore Events Section */}
+        <Text style={styles.sectionTitle}>Explore Events</Text>
+        {/* Search, Sort, Filter UI */}
+       
+        {paginatedExploreEvents.length === 0 ? (
+          <Text style={styles.emptyText}>No events found. Try adjusting your filters or search.</Text>
+        ) : (
+          paginatedExploreEvents.map(event => (
+            <EventCard
+              key={event.id}
+              event={event}
+              userId={user.uid}
+              onLocationPress={openMap}
+              onEdit={handleEditEvent}
+              onDelete={handleDeleteEvent}
+              onViewDetails={(selectedEvent) =>
+                navigation.navigate('EventDetails', { event: selectedEvent, userId: user.uid })
+              }
+            />
+          ))
+        )}
+        {paginatedExploreEvents.length < exploreEvents.length && (
+          <TouchableOpacity style={styles.loadMoreBtn} onPress={handleLoadMore}>
+            <Text style={styles.loadMoreText}>Load More</Text>
+          </TouchableOpacity>
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  </PaperProvider>
   );
 }
 
@@ -354,14 +413,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
   },
   container: { padding: 16, backgroundColor: '#fff' },
-  searchBar: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    margin: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
+ searchBar: {
+  flex: 1,
+  borderWidth: 1,
+  borderColor: '#ccc',
+  borderRadius: 8,
+  paddingHorizontal: 10,
+  paddingVertical: 8,
+  fontSize: 16,
+  marginRight: 8,
+},
+iconBtn: {
+  padding: 6,
+  marginLeft: 2,
+},
   iconBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -401,4 +466,48 @@ const styles = StyleSheet.create({
   eventTime: { fontSize: 14, color: '#444', marginLeft: 12 },
   eventLocation: { fontSize: 14, color: '#FF822B', marginVertical: 2, textDecorationLine: 'underline' },
   eventDescription: { fontSize: 13, color: '#666', marginTop: 4 },
+  sectionTitle: {
+  fontSize: 20,
+  fontWeight: 'bold',
+  color: '#222',
+  marginTop: 18,
+  marginBottom: 8,
+  marginLeft: 16,
+},
+emptyUserEvents: {
+  alignItems: 'center',
+  marginVertical: 16,
+  paddingHorizontal: 16,
+},
+emptyText: {
+  color: '#666',
+  fontSize: 15,
+  textAlign: 'center',
+  marginBottom: 8,
+},
+createEventBtn: {
+  backgroundColor: '#FF822B',
+  borderRadius: 8,
+  paddingVertical: 10,
+  paddingHorizontal: 24,
+  marginTop: 8,
+},
+createEventBtnText: {
+  color: '#fff',
+  fontWeight: 'bold',
+  fontSize: 16,
+},
+loadMoreBtn: {
+  backgroundColor: '#FFE5D1',
+  borderRadius: 8,
+  paddingVertical: 10,
+  paddingHorizontal: 24,
+  alignSelf: 'center',
+  marginVertical: 12,
+},
+loadMoreText: {
+  color: '#FF822B',
+  fontWeight: 'bold',
+  fontSize: 16,
+},
 });
