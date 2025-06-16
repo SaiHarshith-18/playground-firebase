@@ -15,6 +15,7 @@ import CreateEventScreen from '../screens/Events/CreateEventScreen';
 import LocationPicker from '../screens/Events/LocationPicker';
 import UserEventList from '../screens/Events/UserEventList';
 import Notification from '../screens/NotificationScreen';
+import EventDetails from '../screens/Events/EventDetails';
 
 
 const Stack = createNativeStackNavigator();
@@ -37,6 +38,8 @@ export default function AppNav() {
               <Stack.Screen name="LocationPicker" component={LocationPicker} />
               <Stack.Screen name="AllUserEvents" component={UserEventList} />
               <Stack.Screen name="Notifications" component={Notification} />
+              <Stack.Screen name="EventDetails" component={EventDetails} options={{ title: 'Event Details' }} />
+
             </>
           )
           : (
