@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -6,89 +6,161 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Text,
-  Platform,
+  Modal,
+  Animated,
+  Easing,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, AnimatedRegion } from "react-native-maps";
 import * as Location from "expo-location";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { doc, updateDoc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, addDoc, collection, serverTimestamp, getDocs } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useIsFocused } from '@react-navigation/native';
 import { useCallback } from 'react';
 
 export default function HomeScreen() {
+  const mapRef = useRef(null);
+  const isFocused = useIsFocused();
   const { user } = useContext(AuthContext);
   const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profileImage, setProfileImage] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [currentEventIndex, setCurrentEventIndex] = useState(0);
+  const [popupVisible, setPopupVisible] = useState(true);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
   const navigation = useNavigation();
 
+  const markerPosition = useRef(null);
+
+  useEffect(() => {
+    if (location && !markerPosition.current) {
+      markerPosition.current = new AnimatedRegion({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+    }
+  }, [location]);
+
+  useEffect(() => {
+  if (!mapRef.current || !currentEvent?.location) return;
+
+  mapRef.current.pointForCoordinate({
+    latitude: currentEvent.location.latitude,
+    longitude: currentEvent.location.longitude
+  }).then(point => {
+    setPopupPosition({ x: point.x, y: point.y });
+  });
+}, [currentEvent]);
+
   useFocusEffect(
     useCallback(() => {
-    const fetchData = async () => {
-      setLoading(true);
+      const fetchData = async () => {
+        setLoading(true);
+        setPopupVisible(true);
 
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-        setLoading(false);
-        return;
-      }
-
-      let currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation({
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-      });
-
-      // Fetch avatar from Firestore
-      if (user?.uid) {
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists() && userSnap.data().avatar) {
-          setProfileImage(userSnap.data().avatar);
-        } else {
-          setProfileImage(null);
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          console.log("Permission to access location was denied");
+          setLoading(false);
+          return;
         }
-      }
-      setLoading(false);
-    };
-    fetchData();
-  }, [user])
-);
 
-  const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        let currentLocation = await Location.getCurrentPositionAsync({});
+        setLocation({
+          latitude: currentLocation.coords.latitude,
+          longitude: currentLocation.coords.longitude,
+        });
 
-    if (permissionResult.granted === false) {
-      alert("Permission to access camera roll is required!");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const uri = result.assets[0].uri;
-      setProfileImage(uri);
-
-      // Save avatar to Firestore
-      if (user?.uid) {
-        try {
+        if (user?.uid) {
           const userRef = doc(db, 'users', user.uid);
-          await updateDoc(userRef, { avatar: uri });
-        } catch (error) {
-          console.error('Error updating avatar:', error);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists() && userSnap.data().avatar) {
+            setProfileImage(userSnap.data().avatar);
+          } else {
+            setProfileImage(null);
+          }
         }
-      }
+        setLoading(false);
+      };
+      fetchData();
+    }, [user])
+  );
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const snapshot = await getDocs(collection(db, 'events'));
+      setEvents(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    };
+    fetchEvents();
+  }, []);
+
+  useEffect(() => {
+    if (!events.length || !location) return;
+    const interval = setInterval(() => {
+      setPopupVisible(false);
+      setTimeout(() => {
+        setCurrentEventIndex((prev) => (prev + 1) % events.length);
+        setPopupVisible(true);
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 600,
+          easing: Easing.out(Easing.exp),
+          useNativeDriver: true,
+        }).start();
+      }, 400);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [events, location]);
+
+  useEffect(() => {
+    if (!events.length || !mapRef.current || !markerPosition.current) return;
+    const event = events[currentEventIndex];
+    if (event?.location?.latitude && event?.location?.longitude) {
+      mapRef.current.animateToRegion({
+        latitude: event.location.latitude,
+        longitude: event.location.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      }, 1000);
+
+      markerPosition.current.timing({
+        latitude: event.location.latitude,
+        longitude: event.location.longitude,
+        duration: 1000,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [currentEventIndex, events]);
+
+  const currentEvent = events[currentEventIndex];
+
+   const pickImage = async () => {
+  };
+
+  const handleCreateEvent = async () => {
+    try {
+      const eventRef = await addDoc(collection(db, 'events'), {
+        title,
+        location,
+        description,
+        date,
+        time,
+        createdBy: user.uid,
+        attendees: [user.uid],
+        createdAt: serverTimestamp(),
+      });
+      Alert.alert('Success', 'Event Created!');
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error creating event:', error);
     }
   };
 
@@ -115,44 +187,83 @@ export default function HomeScreen() {
     longitudeDelta: 0.01,
   };
 
-  const handleCreateEvent = async () => {
-    try {
-      const eventRef = await addDoc(collection(db, 'events'), {
-        title,
-        location,
-        description,
-        date,
-        time,
-        createdBy: user.uid,
-        attendees: [user.uid],
-        createdAt: serverTimestamp(),
-      });
-      Alert.alert('Success', 'Event Created!');
-      navigation.goBack();
-    } catch (error) {
-      console.error('Error creating event:', error);
-    }
-  };
-
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}> 
-      <View style={styles.container}>
-        <MapView
-          style={styles.map}
-          initialRegion={initialRegion}
-          showsUserLocation={true}
-        >
-          <Marker
-            coordinate={{
-              latitude: location.latitude,
-              longitude: location.longitude,
-            }}
-            pinColor="red"
-          />
-        </MapView>
-      </View>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+     <MapView
+  ref={mapRef}
+  style={styles.map}
+  initialRegion={location ? {
+    latitude: location.latitude,
+    longitude: location.longitude,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  } : undefined}
+  showsUserLocation
+>
+  {events.map((event, idx) => (
+    <Marker
+      key={event.id}
+      coordinate={event.location}
+      // Use a custom marker for the current event
+      tracksViewChanges={false}
+    >
+      {idx === currentEventIndex ? (
+        // Big red marker for current event
+        <View style={styles.bigMarker}>
+          <Ionicons name="location-sharp" size={50} color="#FF3B30" />
+        </View>
+      ) : (
+        // Small gray marker for others
+        <View style={styles.smallMarker}>
+          <Ionicons name="location-sharp" size={28} color="#888" />
+        </View>
+      )}
+    </Marker>
+  ))}
+</MapView>
 
-      {/* Top Right Buttons */}
+      <Animated.View
+  style={{
+    position: 'absolute',
+    left: popupPosition.x - 100,
+    top: popupPosition.y - 80 ,
+    width: 200,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 5,
+    opacity: fadeAnim,
+    zIndex: 999,
+  }}
+>
+<TouchableOpacity
+    onPress={() => navigation.navigate('EventDetails', { event: currentEvent })}
+    style={{ alignItems: 'center' }}
+  >
+    <Text style={{
+      fontWeight: 'bold',
+      color: '#FF822B',
+      fontSize: 17,
+      marginBottom: 4,
+      textAlign: 'center',
+    }}>
+      {currentEvent?.title}
+    </Text>
+    <Text style={{
+      fontSize: 13,
+      color: '#444',
+      textAlign: 'center',
+      marginBottom: 2,
+    }}>
+      {currentEvent?.location?.name || "Near you"}
+    </Text>
+  </TouchableOpacity>
+</Animated.View>
+
+ {/* Top Right Buttons */}
       <View style={styles.topRightContainer}>
         {/* Profile Icon */}
         <View style={styles.profileContainer}>
@@ -178,17 +289,66 @@ export default function HomeScreen() {
           <Feather name="plus" size={38} color="orange"/>
         </TouchableOpacity>
       </View>
+
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { flex: 1 },
+  map: { flex: 1 },
+  popupContainer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    right: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  map: {
-    flex: 1,
-    opacity: 0.75
+  popup: {
+    backgroundColor: '#fff',
+    padding: 18,
+    borderRadius: 12,
+    alignItems: 'center',
+    elevation: 6,
+  },
+  popupTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FF822B',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  bigMarker: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'rgba(255,130,43,0.15)',
+  borderRadius: 30,
+  padding: 2,
+},
+smallMarker: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'rgba(200,200,200,0.10)',
+  borderRadius: 16,
+  padding: 1,
+},
+  popupLocation: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  popupButton: {
+    backgroundColor: '#FF822B',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+  },
+  popupButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   topRightContainer: {
     position: "absolute",
