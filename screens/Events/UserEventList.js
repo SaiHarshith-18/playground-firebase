@@ -214,7 +214,7 @@ export default function UserEventList() {
      <View style={styles.iconBar}>
   <TextInput
     style={styles.searchBar}
-    placeholder="Search events"
+    placeholder="Search by title, description, or location"
     value={searchQuery}
     onChangeText={setSearchQuery}
   />
@@ -430,7 +430,6 @@ iconBtn: {
   iconBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 18,
     marginTop: 8,
     marginRight: 16,
     marginLeft: 16,
