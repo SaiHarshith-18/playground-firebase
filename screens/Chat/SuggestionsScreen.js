@@ -29,73 +29,71 @@ export default function SuggestionsSection() {
   const { user } = useContext(AuthContext);
   const navigation = useNavigation();
 
-  useFocusEffect(
-    useCallback(() => {
-    const fetchUsers = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, 'users'));
-        const allUsers = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        const currentUser = allUsers.find((u) => u.id === user?.uid);
-        const rest = allUsers.filter((u) => u.id !== user?.uid);
-        setLinkedUsers(currentUser?.friends || []);
-        setUsers(rest);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      }
-    };
-    if(user?.uid) fetchUsers();
-  }, [user?.uid])
-)
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    // Listen for changes to all users
+    const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
+      const allUsers = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const currentUser = allUsers.find((u) => u.id === user.uid);
+      const rest = allUsers.filter((u) => u.id !== user.uid);
+      setLinkedUsers(currentUser?.friends || []);
+      setUsers(rest);
+    });
+
+    return () => unsubscribeUsers();
+  }, [user?.uid]);
+
   const handleAddFriend = async (friendId) => {
-  try {
-    const userRef = doc(db, 'users', user.uid);
-    const friendRef = doc(db, 'users', friendId);
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const friendRef = doc(db, 'users', friendId);
 
-    await updateDoc(userRef, {
-      sentRequests: arrayUnion(friendId),
-    });
+      await updateDoc(userRef, {
+        sentRequests: arrayUnion(friendId),
+      });
 
-    await updateDoc(friendRef, {
-      receivedRequests: arrayUnion(user.uid),
-    });
+      await updateDoc(friendRef, {
+        receivedRequests: arrayUnion(user.uid),
+      });
 
-    // ✅ Update local UI immediately
-    setUsers(prev =>
-      prev.map(u =>
-        u.id === friendId
-          ? {
+      // ✅ Update local UI immediately
+      setUsers(prev =>
+        prev.map(u =>
+          u.id === friendId
+            ? {
               ...u,
               receivedRequests: [...(u.receivedRequests || []), user.uid],
             }
-          : u
-      )
-    );
-  } catch (err) {
-    console.error('Error sending request:', err);
-  }
-};
+            : u
+        )
+      );
+    } catch (err) {
+      console.error('Error sending request:', err);
+    }
+  };
 
 
-const handleAcceptRequest = async (friendId) => {
-  try {
-    const userRef = doc(db, 'users', user.uid);
-    const friendRef = doc(db, 'users', friendId);
+  const handleAcceptRequest = async (friendId) => {
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const friendRef = doc(db, 'users', friendId);
 
-    await updateDoc(userRef, {
-      friends: arrayUnion(friendId),
-      receivedRequests: arrayRemove(friendId),
-    });
+      await updateDoc(userRef, {
+        friends: arrayUnion(friendId),
+        receivedRequests: arrayRemove(friendId),
+      });
 
-    await updateDoc(friendRef, {
-      friends: arrayUnion(user.uid),
-      sentRequests: arrayRemove(user.uid),
-    });
+      await updateDoc(friendRef, {
+        friends: arrayUnion(user.uid),
+        sentRequests: arrayRemove(user.uid),
+      });
 
-    setLinkedUsers((prev) => [...prev, friendId]);
-  } catch (err) {
-    console.error('Error accepting request:', err);
-  }
-};
+      setLinkedUsers((prev) => [...prev, friendId]);
+    } catch (err) {
+      console.error('Error accepting request:', err);
+    }
+  };
 
 
 
@@ -105,45 +103,45 @@ const handleAcceptRequest = async (friendId) => {
 
   const renderFriend = ({ item }) => {
     const currentUserId = user?.uid;
-const isFriend = linkedUsers.includes(item.id);
-const hasSentRequest = item?.receivedRequests?.includes(currentUserId); // Correct!
-const hasReceivedRequest = item?.sentRequests?.includes(currentUserId);
+    const isFriend = linkedUsers.includes(item.id);
+    const hasSentRequest = item?.receivedRequests?.includes(currentUserId); // Correct!
+    const hasReceivedRequest = item?.sentRequests?.includes(currentUserId);
 
-let actionButton;
-if (isFriend) {
-  actionButton = (
-    <TouchableOpacity
-      style={[styles.friendAddButton, { backgroundColor: '#ccc' }]}
-      onPress={() => handleMessage(item)}
-    >
-      <Text style={styles.addButtonText}>Message</Text>
-    </TouchableOpacity>
-  );
-} else if (hasSentRequest) {
-  actionButton = (
-    <View style={[styles.friendAddButton, { backgroundColor: '#999' }]}>
-      <Text style={styles.addButtonText}>Request Sent</Text>
-    </View>
-  );
-} else if (hasReceivedRequest) {
-  actionButton = (
-    <TouchableOpacity
-      style={[styles.friendAddButton, { backgroundColor: '#4CAF50' }]}
-      onPress={() => handleAcceptRequest(item.id)}
-    >
-      <Text style={styles.addButtonText}>Accept</Text>
-    </TouchableOpacity>
-  );
-} else {
-  actionButton = (
-    <TouchableOpacity
-      style={styles.friendAddButton}
-      onPress={() => handleAddFriend(item.id)}
-    >
-      <Text style={styles.addButtonText}>Add</Text>
-    </TouchableOpacity>
-  );
-}
+    let actionButton;
+    if (isFriend) {
+      actionButton = (
+        <TouchableOpacity
+          style={[styles.friendAddButton, { backgroundColor: '#ccc' }]}
+          onPress={() => handleMessage(item)}
+        >
+          <Text style={styles.addButtonText}>Message</Text>
+        </TouchableOpacity>
+      );
+    } else if (hasSentRequest) {
+      actionButton = (
+        <View style={[styles.friendAddButton, { backgroundColor: '#999' }]}>
+          <Text style={styles.addButtonText}>Request Sent</Text>
+        </View>
+      );
+    } else if (hasReceivedRequest) {
+      actionButton = (
+        <TouchableOpacity
+          style={[styles.friendAddButton, { backgroundColor: '#4CAF50' }]}
+          onPress={() => handleAcceptRequest(item.id)}
+        >
+          <Text style={styles.addButtonText}>Accept</Text>
+        </TouchableOpacity>
+      );
+    } else {
+      actionButton = (
+        <TouchableOpacity
+          style={styles.friendAddButton}
+          onPress={() => handleAddFriend(item.id)}
+        >
+          <Text style={styles.addButtonText}>Add</Text>
+        </TouchableOpacity>
+      );
+    }
 
 
     return (
@@ -188,7 +186,7 @@ if (isFriend) {
           </View>
         ) : (
           <FlatList
-            data={users}
+            data={users.filter(u => !linkedUsers.includes(u.id))}
             keyExtractor={(item) => item.id}
             renderItem={renderFriend}
             scrollEnabled={true}
