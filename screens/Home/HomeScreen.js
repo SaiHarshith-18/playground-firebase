@@ -49,16 +49,28 @@ export default function HomeScreen() {
     }
   }, [location]);
 
-  useEffect(() => {
+ useEffect(() => {
   if (!mapRef.current || !currentEvent?.location) return;
 
-  mapRef.current.pointForCoordinate({
-    latitude: currentEvent.location.latitude,
-    longitude: currentEvent.location.longitude
-  }).then(point => {
-    setPopupPosition({ x: point.x, y: point.y });
-  });
-}, [currentEvent]);
+  const timeout = setTimeout(() => {
+    mapRef.current.pointForCoordinate({
+      latitude: currentEvent.location.latitude,
+      longitude: currentEvent.location.longitude,
+    }).then(point => {
+      setPopupPosition({ x: point.x, y: point.y });
+      fadeAnim.setValue(0);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        easing: Easing.out(Easing.exp),
+        useNativeDriver: true,
+      }).start();
+    }).catch((e) => console.warn('pointForCoordinate error:', e));
+  }, 500); // delay slightly to ensure layout is done
+
+  return () => clearTimeout(timeout);
+}, [currentEvent, mapRef.current]);
+
 
   useFocusEffect(
     useCallback(() => {
@@ -222,23 +234,24 @@ export default function HomeScreen() {
   ))}
 </MapView>
 
-      <Animated.View
-  style={{
-    position: 'absolute',
-    left: popupPosition.x - 100,
-    top: popupPosition.y - 80 ,
-    width: 200,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 5,
-    opacity: fadeAnim,
-    zIndex: 999,
-  }}
->
+    {popupPosition && (
+  <Animated.View
+    style={{
+      position: 'absolute',
+      left: popupPosition.x-80,
+      top: popupPosition.y-80,
+      width: 200,
+      backgroundColor: 'white',
+      borderRadius: 12,
+      padding: 10,
+      shadowColor: '#000',
+      shadowOpacity: 0.2,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 5,
+      opacity: fadeAnim,
+      zIndex: 999,
+    }}
+  >
 <TouchableOpacity
     onPress={() => navigation.navigate('EventDetails', { event: currentEvent })}
     style={{ alignItems: 'center' }}
@@ -262,6 +275,7 @@ export default function HomeScreen() {
     </Text>
   </TouchableOpacity>
 </Animated.View>
+    )}
 
  {/* Top Right Buttons */}
       <View style={styles.topRightContainer}>

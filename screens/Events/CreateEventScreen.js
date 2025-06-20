@@ -98,11 +98,17 @@ export default function CreateEventScreen({ navigation, route }) {
         Alert.alert('Success', 'Event updated!');
       } else {
         await addDoc(collection(db, 'events'), {
-          ...eventData,
+          title,
+          location,
+          description,
+          date,
+          time,
+          gameType,
+          role,
           createdBy: user.uid,
-          attendees: [user.uid], // creator is first attendee
+          attendees: [user.uid],
           invitedUsers: [],
-          createdAt: Timestamp.now()
+          createdAt: serverTimestamp()
         });
         Alert.alert('Success', 'Event Created!');
       }

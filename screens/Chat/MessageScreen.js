@@ -14,6 +14,7 @@ import {
   doc,
   updateDoc,
   arrayUnion,
+  getDoc
 } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -86,9 +87,93 @@ export default function MessageScreen() {
     }
   };
 
+  const handleSendRequest = async (targetUser) => {
+    const userRef = doc(db, 'users', user.uid);
+    const targetRef = doc(db, 'users', targetUser.uid);
+
+    try {
+      // Read current data
+      const userSnap = await getDoc(userRef);
+      const targetSnap = await getDoc(targetRef);
+      const userData = userSnap.data();
+      const targetData = targetSnap.data();
+
+      // Manually update fields
+      await updateDoc(userRef, {
+        sentRequests: [...(userData.sentRequests || []), targetUser.uid]
+      });
+
+      await updateDoc(targetRef, {
+        receivedRequests: [...(targetData.receivedRequests || []), user.uid]
+      });
+
+    } catch (err) {
+      console.error('Send request error:', err);
+    }
+  };
+
+  const handleAcceptRequest = async (targetUser) => {
+    const userRef = doc(db, 'users', user.uid);
+    const targetRef = doc(db, 'users', targetUser.uid);
+
+    try {
+      const userSnap = await getDoc(userRef);
+      const targetSnap = await getDoc(targetRef);
+      const userData = userSnap.data();
+      const targetData = targetSnap.data();
+
+      await updateDoc(userRef, {
+        friends: [...(userData.friends || []), targetUser.uid],
+        receivedRequests: (userData.receivedRequests || []).filter(uid => uid !== targetUser.uid)
+      });
+
+      await updateDoc(targetRef, {
+        friends: [...(targetData.friends || []), user.uid],
+        sentRequests: (targetData.sentRequests || []).filter(uid => uid !== user.uid)
+      });
+
+    } catch (err) {
+      console.error('Accept request error:', err);
+    }
+  };
+
   const navigateToChat = (friend) => {
     navigation.navigate('Chat', { recipient: friend });
   };
+
+  const renderUserItem = ({ item }) => {
+                  const isConnected = connectedUsers.some(u => u.uid === item.uid);
+                  const hasSentRequest = item?.receivedRequests?.includes(user.uid);
+                  const hasReceivedRequest = item?.sentRequests?.includes(user.uid);
+
+                  return (
+                    <View style={styles.userCard}>
+                      <Text style={styles.userName}>{item.fullName}</Text>
+
+                      {isConnected ? (
+                        <TouchableOpacity style={styles.messageBtn} onPress={() => navigateToChat(item)}>
+                          <Ionicons name="chatbox-ellipses-outline" size={20} color="#fff" />
+                          <Text style={styles.connectBtnText}>Chat</Text>
+                        </TouchableOpacity>
+                      ) : hasReceivedRequest ? (
+                        <TouchableOpacity style={styles.connectBtn} onPress={() => handleAcceptRequest(item)}>
+                          <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
+                          <Text style={styles.connectBtnText}>Accept</Text>
+                        </TouchableOpacity>
+                      ) : hasSentRequest ? (
+                        <View style={styles.connectBtn}>
+                          <Ionicons name="hourglass-outline" size={18} color="#fff" />
+                          <Text style={styles.connectBtnText}>Pending</Text>
+                        </View>
+                      ) : (
+                        <TouchableOpacity style={styles.connectBtn} onPress={() => handleSendRequest(item)}>
+                          <Ionicons name="person-add" size={18} color="#fff" />
+                          <Text style={styles.connectBtnText}>Connect</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  );
+                }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -111,31 +196,8 @@ export default function MessageScreen() {
               <FlatList
                 data={searchResults}
                 keyExtractor={item => item.uid}
-                renderItem={({ item }) => {
-                  const isConnected = connectedUsers.some(u => u.uid === item.uid);
-                  return (
-                    <View style={styles.userCard}>
-                      <Text style={styles.userName}>{item.fullName}</Text>
-                      {isConnected ? (
-                        <TouchableOpacity
-                          style={styles.messageBtn}
-                          onPress={() => navigateToChat(item)}
-                        >
-                          <Ionicons name="chatbox-ellipses-outline" size={20} color="#fff" />
-                          <Text style={styles.connectBtnText}>Chat</Text>
-                        </TouchableOpacity>
-                      ) : (
-                        <TouchableOpacity
-                          style={styles.connectBtn}
-                          onPress={() => handleConnect(item)}
-                        >
-                          <Ionicons name="person-add" size={18} color="#fff" />
-                          <Text style={styles.connectBtnText}>Connect</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  );
-                }}
+                renderItem={renderUserItem}
+
               />
             ) : (
               <Text style={{ marginBottom: 20, color: '#888' }}>No user found</Text>
