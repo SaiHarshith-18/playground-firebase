@@ -22,25 +22,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { EventCard } from './EventCard';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { doc, deleteDoc } from 'firebase/firestore';
+import { parseEventDateTime } from '../../utils/Date.js';
+import { getDistance, openMap } from '../../utils/Location';
 
 if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
 }
-
-export const parseEventDateTime = (dateStr, timeStr) => {
-  if (!dateStr || !timeStr) return new Date('invalid');
-  const [year, month, day] = dateStr.trim().split('-');
-  const cleanTime = timeStr.trim().toUpperCase();
-  const convertTo24Hr = (time12h) => {
-    const [time, modifier] = time12h.split(' ');
-    let [hours, minutes] = time.split(':').map(Number);
-    if (modifier === 'PM' && hours < 12) hours += 12;
-    if (modifier === 'AM' && hours === 12) hours = 0;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
-  };
-  const isoDate = `${year}-${month}-${day}T${convertTo24Hr(cleanTime)}`;
-  return new Date(isoDate);
-};
 
 export default function UserEventList() {
   const { user } = useContext(AuthContext);
@@ -83,7 +70,7 @@ export default function UserEventList() {
 
       setMyEvents(mine);
       setExploreEvents(explore);
-      setExplorePage(1); // Reset page on filter/sort/search change
+      setExplorePage(1);
     }
   }, [events, filters, sortBy, searchQuery]);
 
@@ -101,29 +88,6 @@ export default function UserEventList() {
 
   const handleDeleteEvent = async (event) => {
     await deleteDoc(doc(db, 'events', event.id));
-    // Optionally refresh the list here
-  };
-
-  const openMap = (location) => {
-    const lat = location.latitude;
-    const lng = location.longitude;
-    const label = location.name;
-    const url = Platform.select({
-      ios: `maps:0,0?q=${label}@${lat},${lng}`,
-      android: `geo:0,0?q=${lat},${lng}(${label})`,
-    });
-    Linking.openURL(url);
-  };
-
-  const getDistance = (lat1, lon1, lat2, lon2) => {
-    const toRad = (x) => x * Math.PI / 180;
-    const R = 3958.8;
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a = Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
   };
 
   const sortEvents = (data) => {
@@ -248,7 +212,6 @@ export default function UserEventList() {
               />
             ))}
           </Menu>
-
           <Menu
             visible={filterMenuVisible}
             onDismiss={() => setFilterMenuVisible(false)}
@@ -345,7 +308,6 @@ export default function UserEventList() {
   </TouchableOpacity>
 </View>
       <ScrollView style={{ flex: 1 }}>
-        {/* My Events Section */}
         <Text style={styles.sectionTitle}>My Events</Text>
         {myEvents.length === 0 ? (
           <View style={styles.emptyUserEvents}>
@@ -373,11 +335,7 @@ export default function UserEventList() {
             />
           ))
         )}
-
-        {/* Explore Events Section */}
-        <Text style={styles.sectionTitle}>Explore Events</Text>
-        {/* Search, Sort, Filter UI */}
-       
+        <Text style={styles.sectionTitle}>Explore Events</Text> 
         {paginatedExploreEvents.length === 0 ? (
           <Text style={styles.emptyText}>No events found. Try adjusting your filters or search.</Text>
         ) : (
@@ -412,7 +370,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 0,
   },
-  container: { padding: 16, backgroundColor: '#fff' },
  searchBar: {
   flex: 1,
   borderWidth: 1,
@@ -446,25 +403,8 @@ iconBtn: {
     shadowRadius: 4,
     elevation: 3,
   },
-  dateBlock: {
-    width: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
-  },
   day: { fontSize: 18, fontWeight: 'bold', color: '#FF822B' },
   month: { fontSize: 12, color: '#888', marginTop: -2 },
-  eventContent: { flex: 1 },
-  titleTimeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  eventTitle: { fontWeight: 'bold', fontSize: 16, flex: 1 },
-  eventTime: { fontSize: 14, color: '#444', marginLeft: 12 },
-  eventLocation: { fontSize: 14, color: '#FF822B', marginVertical: 2, textDecorationLine: 'underline' },
-  eventDescription: { fontSize: 13, color: '#666', marginTop: 4 },
   sectionTitle: {
   fontSize: 20,
   fontWeight: 'bold',
