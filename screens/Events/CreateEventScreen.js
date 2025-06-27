@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { addDoc, collection, serverTimestamp, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -29,16 +29,22 @@ export default function CreateEventScreen({ navigation, route }) {
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [pickerMode, setPickerMode] = useState(null); // 'date' or 'time'
+  const [isPickerVisible, setPickerVisible] = useState(false);
   const [gameTypeMenuVisible, setGameTypeMenuVisible] = useState(false);
+  const [invitedUsers, setInvitedUsers] = useState([]);
 
   useEffect(() => {
     if (route?.params?.selectedLocation) {
       setLocation(route.params.selectedLocation);
     }
   }, [route?.params?.selectedLocation]);
+
+  useEffect(() => {
+    if(route?.params?.inviteUserIds){
+      setInvitedUsers(route.params.inviteUserIds);
+    }
+  },[route?.params?.inviteUserIds]);
 
   useEffect(() => {
     if (editingEvent) {
@@ -57,30 +63,38 @@ export default function CreateEventScreen({ navigation, route }) {
     "Tennis", "Golf", "Auto Racing", "Wresting", "Lacrosse", "Other"
   ];
 
-  const openLocationPicker = () => {
-    navigation.navigate('LocationPicker');
+ const openLocationPicker = () => {
+    navigation.navigate('LocationPicker', {
+      onLocationSelected: (location) => {
+        setLocation(location);
+      },
+    },);
+};
+
+  const showPicker = (mode) => {
+    setPickerMode(mode);
+    setPickerVisible(true);
   };
 
-  const handleDateChange = (event, newDate) => {
-    if (event.type === 'set' && newDate) {
-      setSelectedDate(newDate);
-      const formatted = newDate.toLocaleDateString('en-GB').split('/').reverse().join('-');
+  const hidePicker = () => {
+    setPickerVisible(false);
+  };
+
+  const handleConfirm = (selected) => {
+    if (pickerMode === 'date') {
+      const formatted = selected.toLocaleDateString('en-GB').split('/').reverse().join('-');
       setDate(formatted);
-    }
-    setShowDatePicker(false);
-  };
-
-  const handleTimeChange = (event, selectedTime) => {
-    setShowTimePicker(false);
-    if (selectedTime) {
-      const hours = selectedTime.getHours();
-      const minutes = selectedTime.getMinutes();
+    } else if (pickerMode === 'time') {
+      const hours = selected.getHours();
+      const minutes = selected.getMinutes();
       const ampm = hours >= 12 ? 'PM' : 'AM';
       const hour12 = hours % 12 || 12;
       const formatted = `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
       setTime(formatted);
     }
+    hidePicker();
   };
+
 
   const handleSubmit = async () => {
     if (!title || !location || !description || !date || !time) {
@@ -107,8 +121,9 @@ export default function CreateEventScreen({ navigation, route }) {
           role,
           createdBy: user.uid,
           attendees: [user.uid],
-          invitedUsers: [],
-          createdAt: serverTimestamp()
+          invitedUsers,
+          createdAt: serverTimestamp(),
+          isChallenging: route?.params?.isChallenge || false
         });
         Alert.alert('Success', 'Event Created!');
       }
@@ -172,32 +187,24 @@ export default function CreateEventScreen({ navigation, route }) {
           onChangeText={setDescription}
           style={styles.input}
         />
-        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
+        <TouchableOpacity onPress={() => showPicker('date')} style={styles.input}>
           <Text>{date ? date : 'Select Date (DD-MM-YYYY)'}</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.input}>
+
+        <TouchableOpacity onPress={() => showPicker('time')} style={styles.input}>
           <Text>{time ? time : 'Select Time (e.g. 6:30 PM)'}</Text>
         </TouchableOpacity>
 
-        {showDatePicker && Platform.OS === 'ios' && (
-          <DateTimePicker
-            value={selectedDate}
-            mode="date"
-            display="spinner"
-            onChange={handleDateChange}
-          />
-        )}
-
-
-        {showTimePicker && (
-          <DateTimePicker
-            value={new Date()}
-            mode="time"
-            display="spinner"
-            is24Hour={false}
-            onChange={handleTimeChange}
-          />
-        )}
+        <DateTimePickerModal
+          isVisible={isPickerVisible}
+          mode={pickerMode}
+          date={new Date()}
+          onConfirm={handleConfirm}
+          onCancel={hidePicker}
+          display="spinner"
+          themeVariant="light"
+          textColor="#000"
+        />
 
         <Button title={isEdit ? "Update Event" : "Create Event"} onPress={handleSubmit} />
       </View>
