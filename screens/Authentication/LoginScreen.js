@@ -16,7 +16,6 @@ import { auth } from '../../firebaseConfig';
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
@@ -30,7 +29,6 @@ export default function LoginScreen({ navigation }) {
       Alert.alert('Enter Email', 'Please enter your registered email address.');
       return;
     }
-
     try {
       await sendPasswordResetEmail(auth, email);
       Alert.alert('Check your email', 'Password reset link sent.');
@@ -40,7 +38,6 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -48,7 +45,6 @@ export default function LoginScreen({ navigation }) {
     >
       <View style={styles.card}>
         <Text style={styles.title}>Welcome Back 👋</Text>
-
         <Text style={styles.label}>Email</Text>
         <TextInput
           style={styles.input}
@@ -59,7 +55,6 @@ export default function LoginScreen({ navigation }) {
           onChangeText={setEmail}
           placeholderTextColor="#aaa"
         />
-
         <Text style={styles.label}>Password</Text>
         <TextInput
           style={styles.input}
@@ -69,19 +64,15 @@ export default function LoginScreen({ navigation }) {
           onChangeText={setPassword}
           placeholderTextColor="#aaa"
         />
-
         <TouchableOpacity onPress={handleForgotPassword}>
-  <Text style={styles.forgotText}>Forgot Password?</Text>
-</TouchableOpacity>
-
+          <Text style={styles.forgotText}>Forgot Password?</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Log In</Text>
         </TouchableOpacity>
-
         <TouchableOpacity onPress={() => navigation.navigate('Register')}>
           <Text style={styles.link}>Don't have an account? <Text style={{ color: '#D44A16', fontWeight: '600' }}>Register</Text></Text>
         </TouchableOpacity>
-
       </View>
     </KeyboardAvoidingView>
   );
