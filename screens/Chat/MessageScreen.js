@@ -102,7 +102,6 @@ export default function MessageScreen() {
   const handleAcceptRequest = async (targetUser) => {
     const userRef = doc(db, 'users', user.uid);
     const targetRef = doc(db, 'users', targetUser.uid);
-
     const userSnap = await getDoc(userRef);
     const targetSnap = await getDoc(targetRef);
     const userData = userSnap.data();
@@ -124,7 +123,6 @@ export default function MessageScreen() {
   const handleCancelRequest = async (targetUser) => {
     const userRef = doc(db, 'users', user.uid);
     const targetRef = doc(db, 'users', targetUser.uid);
-
     const userSnap = await getDoc(userRef);
     const targetSnap = await getDoc(targetRef);
     const userData = userSnap.data();
@@ -148,7 +146,6 @@ export default function MessageScreen() {
     const isConnected = connectedUsers.some(u => u.uid === item.uid);
     const hasSentRequest = mySentRequests.includes(item.uid);
     const hasReceivedRequest = myReceivedRequests.includes(item.uid);
-
     return (
       <View style={styles.userCard}>
         <Text style={styles.userName}>{item.fullName}</Text>
@@ -181,7 +178,6 @@ export default function MessageScreen() {
     <SafeAreaView style={styles.container}>
       <View style={{ paddingHorizontal: 16 }}>
         <Text style={styles.title}>Messages</Text>
-
         <TextInput
           style={styles.searchInput}
           value={search}
@@ -189,7 +185,6 @@ export default function MessageScreen() {
           placeholder="Search by name..."
           placeholderTextColor="#888"
         />
-
         {search.trim() ? (
           <>
             <Text style={styles.subHeading}>Search Results</Text>
