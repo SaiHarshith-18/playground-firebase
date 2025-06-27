@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, FlatList,
-  Image, StyleSheet, KeyboardAvoidingView, Platform, SafeAreaView
+  StyleSheet, KeyboardAvoidingView, Platform, SafeAreaView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, getDoc, setDoc, doc } from 'firebase/firestore';import { db } from '../../firebaseConfig';
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, getDoc, setDoc, doc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
 import UserAvatar from '../../utils/UserAvatar';
 
@@ -16,19 +17,13 @@ export default function ChatScreen({ route, navigation }) {
 
   const chatId = user && chatUser ? [user.uid, chatUser.uid].sort().join('_') : null;
 
-   useEffect(() => {
+  useEffect(() => {
     if (!chatId) return;
-  
-    // Ensure chat doc exists
     setDoc(
       doc(db, 'chats', chatId),
-      {
-        users: [user.uid, chatUser.uid],
-        createdAt: serverTimestamp(),
-      },
+      { users: [user.uid, chatUser.uid], createdAt: serverTimestamp() },
       { merge: true }
     ).then(() => {
-      // Listen for messages
       const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
       const unsubscribe = onSnapshot(q, (snapshot) => {
         setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -37,61 +32,35 @@ export default function ChatScreen({ route, navigation }) {
     });
   }, [chatId]);
 
-const checkFriendshipBeforeSend = async () => {
-  const docSnap = await getDoc(doc(db, 'users', user.uid));
-  const data = docSnap.data();
-  if (!data) return false;
-  const friendList = data.friends || [];
-  return friendList.includes(chatUser.uid);
-};
-
-
-  const handleSend = async () => {
-      console.log('Current UID:', user?.uid);
-  console.log('Recipient UID:', chatUser?.uid);
-  console.log('Chat ID:', chatId);
-
-   const allowed = await checkFriendshipBeforeSend();
-  if (!allowed) {
-    alert('You must connect before chatting.');
-    return;
-  }
-    if (!inputText.trim()) return;
-
-    if (!chatUser?.uid) {
-      console.error('Recipient UID is undefined. Cannot send message.');
-      return;
-    }
-
-    await setDoc(
-    doc(db, 'chats', chatId),
-    {
-      users: [user.uid, chatUser.uid],
-      createdAt: serverTimestamp(),
-    },
-    { merge: true }
-  );
-
-    try {
-      await addDoc(
-    collection(db, 'chats', chatId, 'messages'),
-    {
-      text: inputText,
-      from: user.uid,
-      to: chatUser.uid,
-      createdAt: serverTimestamp(),
-    }
-  );
-      setInputText('');
-    } catch (error) {
-      console.error('Send Error:', error);
-    }
+  const checkFriendshipBeforeSend = async () => {
+    const docSnap = await getDoc(doc(db, 'users', user.uid));
+    const data = docSnap.data();
+    if (!data) return false;
+    const friendList = data.friends || [];
+    return friendList.includes(chatUser.uid);
   };
 
+  const handleSend = async () => {
+    if (!inputText.trim()) return;
+    const allowed = await checkFriendshipBeforeSend();
+    if (!allowed) {
+      alert('You must connect before chatting.');
+      return;
+    }
+    await addDoc(
+      collection(db, 'chats', chatId, 'messages'),
+      {
+        text: inputText,
+        from: user.uid,
+        to: chatUser.uid,
+        createdAt: serverTimestamp(),
+      }
+    );
+    setInputText('');
+  };
 
   const renderMessage = ({ item }) => {
     const isCurrentUser = item.from === user.uid;
-
     return (
       <View style={[
         styles.messageRow,
@@ -117,7 +86,6 @@ const checkFriendshipBeforeSend = async () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#FF822B" />
@@ -125,8 +93,6 @@ const checkFriendshipBeforeSend = async () => {
         <UserAvatar avatar={chatUser.avatar} style={styles.headerAvatar} />
         <Text style={styles.headerTitle}>{chatUser.fullName || 'Chat User'}</Text>
       </View>
-
-      {/* Chat messages */}
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id}
@@ -136,8 +102,6 @@ const checkFriendshipBeforeSend = async () => {
           <Text style={{ textAlign: 'center', color: '#aaa' }}>Start a conversation...</Text>
         )}
       />
-
-      {/* Input */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={80}
