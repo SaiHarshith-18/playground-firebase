@@ -5,7 +5,6 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  Image,
   StyleSheet,
   SafeAreaView,
 } from 'react-native';
@@ -33,8 +32,6 @@ export default function SuggestionsSection() {
 
   useEffect(() => {
     if (!user?.uid) return;
-
-    // Listen for changes to all users
     const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
       const allUsers = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       const currentUser = allUsers.find((u) => u.id === user.uid);
@@ -50,16 +47,12 @@ export default function SuggestionsSection() {
     try {
       const userRef = doc(db, 'users', user.uid);
       const friendRef = doc(db, 'users', friendId);
-
       await updateDoc(userRef, {
         sentRequests: arrayUnion(friendId),
       });
-
       await updateDoc(friendRef, {
         receivedRequests: arrayUnion(user.uid),
       });
-
-      // ✅ Update local UI immediately
       setUsers(prev =>
         prev.map(u =>
           u.id === friendId
@@ -75,41 +68,32 @@ export default function SuggestionsSection() {
     }
   };
 
-
   const handleAcceptRequest = async (friendId) => {
     try {
       const userRef = doc(db, 'users', user.uid);
       const friendRef = doc(db, 'users', friendId);
-
       await updateDoc(userRef, {
         friends: arrayUnion(friendId),
         receivedRequests: arrayRemove(friendId),
       });
-
       await updateDoc(friendRef, {
         friends: arrayUnion(user.uid),
         sentRequests: arrayRemove(user.uid),
       });
-
       setLinkedUsers((prev) => [...prev, friendId]);
     } catch (err) {
       console.error('Error accepting request:', err);
     }
   };
 
-
-
   const handleMessage = (friend) => {
     navigation.navigate('Chat', { recipient: { ...friend, uid: friend.id } });
   };
-
-
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <Text style={styles.sectionTitle}>Suggestions</Text>
-
         <View style={styles.tabs}>
           {['Friends', 'Squad'].map((t) => (
             <TouchableOpacity key={t} onPress={() => setTab(t)}>
@@ -117,7 +101,6 @@ export default function SuggestionsSection() {
             </TouchableOpacity>
           ))}
         </View>
-
         {tab === 'Squad' ? (
           <View style={styles.emptySquadContainer}>
             <Text style={styles.emoji}>😔</Text>
@@ -148,7 +131,6 @@ export default function SuggestionsSection() {
                 contentContainerStyle={{ gap: 12 }}
               />
             </View>
-
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Your Friends</Text>
               <FlatList
@@ -205,11 +187,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderColor: '#FF822B',
     paddingBottom: 4,
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
   },
   emptySquadContainer: {
     alignItems: 'center',
