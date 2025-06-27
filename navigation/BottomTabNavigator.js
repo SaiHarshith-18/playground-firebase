@@ -39,7 +39,7 @@ export default function BottomTabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Profiles"
+        name="Profile"
         component={ProfileScreen}
         options={{
           tabBarIcon: ({ focused }) => (
