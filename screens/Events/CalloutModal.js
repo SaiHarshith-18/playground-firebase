@@ -54,27 +54,24 @@ export default function CalloutModal() {
           <TouchableOpacity style={styles.downArrowContainer} onPress={closeCallout}>
             <Ionicons name="chevron-down" size={36} color="white" />
           </TouchableOpacity>
-
           <Text style={styles.heading}>Challenge Events</Text>
-
-                 <View style={{ marginTop: 16 }}>
-          {challengeEvents.length === 0 ? (
-            <Text style={{ textAlign: 'center', color: '#888', marginTop: 20 }}>No challenge events found.</Text>
-          ) : (
-            challengeEvents.map(event => (
-              <EventCard
-                key={event.id}
-                event={event}
-                userId={null} // or pass current user id if you want to show creator/attendee logic
-                onViewDetails={(selectedEvent) => {
-                  closeCallout();
-                  navigation.navigate('EventDetails', { event: selectedEvent });
-                }}
-              />
-            ))
-          )}
-        </View>
-
+          <View style={{ marginTop: 16 }}>
+            {challengeEvents.length === 0 ? (
+              <Text style={{ textAlign: 'center', color: '#888', marginTop: 20 }}>No challenge events found.</Text>
+            ) : (
+              challengeEvents.map(event => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  userId={null}
+                  onViewDetails={(selectedEvent) => {
+                    closeCallout();
+                    navigation.navigate('EventDetails', { event: selectedEvent });
+                  }}
+                />
+              ))
+            )}
+          </View>
           <TouchableOpacity style={styles.challengeButton} onPress={handleChallengeCreate}>
             <Text style={styles.buttonText}>Challenge Someone</Text>
           </TouchableOpacity>
@@ -125,11 +122,6 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 13,
     marginTop: 2,
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: '#fff',
-    marginTop: 40,
   },
   challengeButton: {
     marginTop: 20,
