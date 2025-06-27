@@ -9,6 +9,7 @@
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import UserAvatar from "../../utils/UserAvatar";
 
  
  export const RenderFriend = ({
@@ -63,15 +64,7 @@ import { Ionicons } from '@expo/vector-icons';
 
   return (
     <View style={styles.friendCard}>
-      {item.avatar && !imageError ? (
-        <Image
-          source={{ uri: item.avatar }}
-          style={styles.friendAvatar}
-          onError={() => setImageError(true)}
-        />
-      ) : (
-        <Ionicons name="person-circle-outline" size={50} color="grey" style={styles.friendAvatar} />
-      )}
+      <UserAvatar avatar={item.avatar} style={styles.friendAvatar}  />
       <View style={styles.friendInfo}>
         <Text style={styles.friendName}>{item.fullName || 'Unnamed'}</Text>
         <Text style={styles.friendAbout}>{item.about || 'No bio available'}</Text>

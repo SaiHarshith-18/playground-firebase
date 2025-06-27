@@ -20,8 +20,8 @@ import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
 import { AuthContext } from '../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
-import UserEventList from './Events/UserEventList';
 import TodayUserEvents from './Events/TodayUserEvents'; 
+import UserAvatar from '../utils/UserAvatar';
 import { IMGUR_CLIENT_ID } from '@env';
 
 const screenWidth = Dimensions.get('window').width;
@@ -78,14 +78,6 @@ export default function ProfileScreen() {
     } catch (error) {
       console.error('Error saving profile:', error);
       Alert.alert('Error', 'Failed to update profile');
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      Alert.alert('Logout Error', error.message);
     }
   };
 
@@ -195,13 +187,7 @@ export default function ProfileScreen() {
 
           <View style={styles.profileRow}>
             <View style={styles.avatarWrapper}>
-              {avatar ? (
-                <Image source={{ uri: avatar }} style={styles.avatar} />
-              ) : (
-                <View style={styles.defaultAvatarWrapper}>
-                  <Ionicons name="person-circle-outline" size={80} color="#ccc" />
-                </View>
-              )}
+            <UserAvatar avatar={avatar} style={styles.avatar} />
               {editMode && (
                 <TouchableOpacity style={styles.addPhotoIcon} onPress={pickImage}>
                   <Feather name="plus" size={18} color="#fff" />

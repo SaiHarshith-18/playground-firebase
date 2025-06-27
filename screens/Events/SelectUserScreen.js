@@ -4,6 +4,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import UserAvatar from '../../utils/UserAvatar';
 
 export default function SelectUserScreen({ route }) {
   const navigation = useNavigation();
@@ -48,16 +49,8 @@ const [selectedUsers, setSelectedUsers] = useState([]);
         ]}
         onPress={() => handleUserPress(item)}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {item.avatar && !imageError ? (
-                 <Image
-                   source={{ uri: item.avatar }}
-                   style={styles.friendAvatar}
-                   onError={() => setImageError(true)}
-                 />
-               ) : (
-                 <Ionicons name="person-circle-outline" size={50} color="grey" style={styles.friendAvatar} />
-               )}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <UserAvatar avatar={item.avatar} style={styles.friendAvatar} />
           <Text style={styles.userName}>{item.fullName || item.name || 'User'}</Text>
           {isSelected && (
             <Ionicons name="checkmark-circle" size={22} color="#4CAF50" style={{ marginLeft: 8 }} />

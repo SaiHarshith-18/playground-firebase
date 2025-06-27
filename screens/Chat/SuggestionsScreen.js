@@ -206,37 +206,6 @@ const styles = StyleSheet.create({
     borderColor: '#FF822B',
     paddingBottom: 4,
   },
-  friendCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f9f9f9',
-    padding: 10,
-    borderRadius: 10,
-  },
-  friendAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 12,
-  },
-  friendInfo: {
-    flex: 1,
-  },
-  friendName: {
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  friendAbout: {
-    color: '#666',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  friendAddButton: {
-    backgroundColor: '#FF822B',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-  },
   addButtonText: {
     color: '#fff',
     fontSize: 12,

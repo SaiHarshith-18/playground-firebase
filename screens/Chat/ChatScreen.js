@@ -6,6 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, getDoc, setDoc, doc } from 'firebase/firestore';import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
+import UserAvatar from '../../utils/UserAvatar';
 
 export default function ChatScreen({ route, navigation }) {
   const { recipient: chatUser } = route.params || {};
@@ -121,14 +122,7 @@ const checkFriendshipBeforeSend = async () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#FF822B" />
         </TouchableOpacity>
-        {chatUser.avatar ? (
-          <Image
-            source={{ uri: chatUser.avatar }}
-            style={styles.headerAvatar}
-          />
-        ) : (
-          <Ionicons name="person-circle-outline" size={36} color="grey" style={styles.headerAvatar} />
-        )}
+        <UserAvatar avatar={chatUser.avatar} style={styles.headerAvatar} />
         <Text style={styles.headerTitle}>{chatUser.fullName || 'Chat User'}</Text>
       </View>
 
