@@ -7,11 +7,15 @@ import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../screens/Home/HomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import MessageScreen from '../screens/Chat/MessageScreen';
-import SettingScreen from '../screens/SettingScreen';
+import SettingScreen from '../screens/Notifications/SettingScreen';
+import { useCalloutModal } from '../contexts/callOutModalContext';
+
 
 const Tab = createBottomTabNavigator();
 
 export default function BottomTabNavigator() {
+
+  const {openCallout} = useCalloutModal();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -35,7 +39,7 @@ export default function BottomTabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Profile"
+        name="Profiles"
         component={ProfileScreen}
         options={{
           tabBarIcon: ({ focused }) => (
@@ -45,6 +49,12 @@ export default function BottomTabNavigator() {
             </View>
           ),
         }}
+        listeners={({ navigation }) => ({
+    tabPress: e => {
+      // Reset to main profile screen
+      navigation.navigate('Profile', { screen: 'ProfileMain' });
+    },
+  })}
       />
       {/* Custom Center Callout Button */}
       <Tab.Screen
@@ -52,13 +62,24 @@ export default function BottomTabNavigator() {
         component={HomeScreen} // You can replace with a custom callout screen if needed
         options={{
           tabBarButton: (props) => (
-            <TouchableOpacity {...props}>
+            <TouchableOpacity
+              {...props}
+              onPress={openCallout}
+              activeOpacity={0.8}
+              style={styles.calloutButton}
+            >
               <Image
                 source={require('../assets/callout.png')}
                 style={styles.calloutButton}
               />
             </TouchableOpacity>
           ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            // Prevent default navigation
+            e.preventDefault();
+          },
         }}
       />
       <Tab.Screen
@@ -85,8 +106,6 @@ export default function BottomTabNavigator() {
           ),
         }}
       />
-
-
     </Tab.Navigator>
   );
 }
@@ -108,7 +127,7 @@ const styles = StyleSheet.create({
     width: 105,
     height: 105,
     position: 'absolute',
-    bottom: 1,
+    bottom: 0,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
