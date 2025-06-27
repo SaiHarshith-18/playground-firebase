@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, FlatList, TouchableOpacity, Text, StyleSheet, SafeAreaView, Image } from 'react-native';
+import { View, TextInput, FlatList, TouchableOpacity, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
@@ -11,8 +11,7 @@ export default function SelectUserScreen({ route }) {
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
-const [selectedUsers, setSelectedUsers] = useState([]);
-  const [imageError, setImageError] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState([]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -108,7 +107,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 12,
   },
-  userCard: {
+ userCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f9f9f9',
@@ -127,7 +126,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#222',
   },
-  emptyText: {
+    emptyText: {
     color: '#888',
     textAlign: 'center',
     marginTop: 30,

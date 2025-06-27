@@ -22,7 +22,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
-import { RenderFriend } from './RenderFriend';
+import { RenderFriend } from '../../utils/RenderFriend';
 
 export default function SuggestionsSection() {
   const [tab, setTab] = useState('Friends');
