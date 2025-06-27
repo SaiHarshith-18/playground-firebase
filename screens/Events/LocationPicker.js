@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,27 +10,27 @@ import {
   ActivityIndicator,
   ScrollView,
   SafeAreaView,
-} from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker } from 'react-native-maps';
-import * as Location from 'expo-location';
-import { LOCATION_API_KEY, GEOCODING_API_KEY } from '@env';
-import { useRoute } from '@react-navigation/native';
+} from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import MapView, { Marker } from "react-native-maps";
+import * as Location from "expo-location";
+import { LOCATION_API_KEY, GEOCODING_API_KEY } from "@env";
+import { useRoute } from "@react-navigation/native";
 
 const GOOGLE_API_KEY = LOCATION_API_KEY;
 
 export default function LocationPicker({ navigation }) {
   const [region, setRegion] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [selectedName, setSelectedName] = useState('');
+  const [selectedName, setSelectedName] = useState("");
   const [loading, setLoading] = useState(true);
-  const [searchText, setSearchText] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchText, setSearchText] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const mapRef = useRef(null);
-const route = useRoute();
+  const route = useRoute();
 
   useFocusEffect(
     useCallback(() => {
@@ -38,8 +38,8 @@ const route = useRoute();
 
       (async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permission Denied', 'Location permission is required.');
+        if (status !== "granted") {
+          Alert.alert("Permission Denied", "Location permission is required.");
           setLoading(false);
           return;
         }
@@ -56,7 +56,7 @@ const route = useRoute();
           setSelectedLocation({
             latitude: coords.latitude,
             longitude: coords.longitude,
-            name: '',
+            name: "",
           });
           setLoading(false);
         }
@@ -76,7 +76,7 @@ const route = useRoute();
         )
           .then((res) => res.json())
           .then((data) => setSuggestions(data.predictions || []))
-          .catch((err) => console.error('Autocomplete error:', err));
+          .catch((err) => console.error("Autocomplete error:", err));
       } else {
         setSuggestions([]);
       }
@@ -99,50 +99,63 @@ const route = useRoute();
         longitudeDelta: 0.01,
       });
 
-      mapRef.current?.animateToRegion({
+      mapRef.current?.animateToRegion(
+        {
+          latitude: coords.lat,
+          longitude: coords.lng,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        },
+        1000
+      );
+
+      setSelectedLocation({
         latitude: coords.lat,
         longitude: coords.lng,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      }, 1000);
-
-      setSelectedLocation({ latitude: coords.lat, longitude: coords.lng, name: data.result.formatted_address });
-      setSelectedName(data.result.formatted_address || data.result.name || description);
+        name: data.result.formatted_address,
+      });
+      setSelectedName(
+        data.result.formatted_address || data.result.name || description
+      );
       setSuggestions([]);
-      setSearchQuery('');
+      setSearchQuery("");
       setSearchResults([]);
     } catch (error) {
-      console.error('Details fetch error:', error);
+      console.error("Details fetch error:", error);
     }
   };
 
   const handleConfirm = () => {
-  if (!selectedLocation) {
-    Alert.alert('No location selected', 'Tap on the map or select from list.');
-    return;
-  }
+    if (!selectedLocation) {
+      Alert.alert(
+        "No location selected",
+        "Tap on the map or select from list."
+      );
+      return;
+    }
 
-  const locationData = {
-    ...selectedLocation,
-    name:
-      selectedName ||
-      `Lat: ${selectedLocation.latitude.toFixed(4)}, Lng: ${selectedLocation.longitude.toFixed(4)}`
+    const locationData = {
+      ...selectedLocation,
+      name:
+        selectedName ||
+        `Lat: ${selectedLocation.latitude.toFixed(
+          4
+        )}, Lng: ${selectedLocation.longitude.toFixed(4)}`,
+    };
+
+    if (route.params?.onLocationSelected) {
+      route.params.onLocationSelected(locationData);
+    }
+
+    navigation.goBack();
   };
 
-  if (route.params?.onLocationSelected) {
-    route.params.onLocationSelected(locationData);
-  }
-
-  navigation.goBack();
-};
-
   return (
-    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.searchContainer}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={28} color="black" />
         </TouchableOpacity>
-
         <View style={styles.searchBox}>
           <TextInput
             placeholder="Search location"
@@ -168,7 +181,9 @@ const route = useRoute();
                 {searchResults.map((result) => (
                   <TouchableOpacity
                     key={result.place_id}
-                    onPress={() => handleSelectPlace(result.place_id, result.description)}
+                    onPress={() =>
+                      handleSelectPlace(result.place_id, result.description)
+                    }
                   >
                     <Text style={styles.resultItem}>{result.description}</Text>
                   </TouchableOpacity>
@@ -178,7 +193,6 @@ const route = useRoute();
           )}
         </View>
       </View>
-
       <MapView
         style={styles.map}
         initialRegion={region}
@@ -187,14 +201,14 @@ const route = useRoute();
         showsMyLocationButton={true}
         onPress={async (e) => {
           const { latitude, longitude } = e.nativeEvent.coordinate;
-
           try {
             const res = await fetch(
               `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GEOCODING_API_KEY}`
             );
-
             const data = await res.json();
-            const address = data?.results?.[0]?.formatted_address || `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`;
+            const address =
+              data?.results?.[0]?.formatted_address ||
+              `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`;
 
             setSelectedLocation({ latitude, longitude, name: address });
             setSelectedName(address); // make sure this is set
@@ -205,7 +219,9 @@ const route = useRoute();
               longitudeDelta: 0.01,
             });
           } catch (error) {
-            const fallback = `Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`;
+            const fallback = `Lat: ${latitude.toFixed(
+              4
+            )}, Lng: ${longitude.toFixed(4)}`;
             setSelectedLocation({ latitude, longitude, name: fallback });
             setSelectedName(fallback);
           }
@@ -222,17 +238,22 @@ const route = useRoute();
           />
         ) : null}
       </MapView>
-      <TouchableOpacity style={styles.confirmBtn} onPress={handleConfirm}>
+      <TouchableOpacity
+        style={[
+          styles.confirmBtn,
+          !selectedLocation && { backgroundColor: "#ccc" },
+        ]}
+        onPress={handleConfirm}
+        disabled={!selectedLocation}
+      >
         <Text style={styles.confirmText}>Confirm Location</Text>
         {selectedLocation && (
           <Text style={styles.locationPreview}>
-            {selectedName
-              ? selectedName
-              : `${selectedLocation?.name}`}
+            {selectedName ? selectedName : `${selectedLocation?.name}`}
           </Text>
         )}
       </TouchableOpacity>
-    </View >
+    </View>
   );
 }
 
@@ -241,13 +262,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   searchContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 70,
     left: 10,
     right: 20,
     zIndex: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   searchBox: {
@@ -255,29 +276,29 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     height: 44,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
     paddingHorizontal: 12,
     fontSize: 16,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 1,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
   resultOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 52,
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
     maxHeight: 200,
     marginTop: 4,
     paddingHorizontal: 4,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
@@ -287,7 +308,7 @@ const styles = StyleSheet.create({
   resultItem: {
     paddingVertical: 10,
     paddingHorizontal: 8,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
     borderBottomWidth: 1,
     fontSize: 15,
   },
@@ -295,30 +316,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   confirmBtn: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 30,
     left: 30,
     right: 30,
-    backgroundColor: '#FF822B',
+    backgroundColor: "#FF822B",
     paddingVertical: 14,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     zIndex: 10,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
   },
   confirmText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
   },
   locationPreview: {
     marginTop: 6,
     fontSize: 12,
-    color: '#fff',
+    color: "#fff",
   },
 });
-
