@@ -15,7 +15,8 @@ export default function EventDetails({ route, navigation }) {
     const [menuVisible, setMenuVisible] = useState(false);
     const [joining, setJoining] = useState(false);
     const [attendeeUsers, setAttendeeUsers] = useState([]);
-
+    const [imageError, setImageError] = useState(false);
+   
     useFocusEffect(
         React.useCallback(() => {
             const fetchEvent = async () => {
@@ -27,26 +28,32 @@ export default function EventDetails({ route, navigation }) {
     );
 
     useEffect(() => {
-        const fetchAttendees = async () => {
-            if (!event.attendees || event.attendees.length === 0) {
-                setAttendeeUsers([]);
-                return;
-            }
-            try {
-                const users = [];
-                for (const uid of event.attendees) {
-                    const userSnap = await getDoc(doc(db, 'users', uid));
-                    if (userSnap.exists()) {
-                        users.push({ uid, ...userSnap.data() });
-                    }
+    const fetchAttendees = async () => {
+        // Combine attendees and invitedUsers, remove duplicates
+        const allIds = [
+            ...(event.attendees || []),
+            ...(event.invitedUsers || [])
+        ];
+        const uniqueIds = Array.from(new Set(allIds));
+        if (uniqueIds.length === 0) {
+            setAttendeeUsers([]);
+            return;
+        }
+        try {
+            const users = [];
+            for (const uid of uniqueIds) {
+                const userSnap = await getDoc(doc(db, 'users', uid));
+                if (userSnap.exists()) {
+                    users.push({ uid, ...userSnap.data() });
                 }
-                setAttendeeUsers(users);
-            } catch (e) {
-                setAttendeeUsers([]);
             }
-        };
-        fetchAttendees();
-    }, [event.attendees]);
+            setAttendeeUsers(users);
+        } catch (e) {
+            setAttendeeUsers([]);
+        }
+    };
+    fetchAttendees();
+}, [event.attendees, event.invitedUsers]);
 
     useEffect(() => {
         if (route.params?.event) {
@@ -122,7 +129,7 @@ export default function EventDetails({ route, navigation }) {
                     <Text style={styles.value}>{event.description || 'No description provided.'}</Text>
 
                     {/* Join Button only if not creator and not already joined */}
-                    {!isCreator && !alreadyJoined && (
+                    {!isCreator && !alreadyJoined && !event.isChallenging && (
                         <TouchableOpacity
                             onPress={handleJoin}
                             style={styles.joinBtn}
@@ -140,8 +147,8 @@ export default function EventDetails({ route, navigation }) {
                         ) : (
                             attendeeUsers.map(user => (
                                 <View key={user.uid} style={styles.attendeeCard}>
-                                    {user.avatar && user.avatar.trim() !== "" ? (
-                                        <Image source={{ uri: user.avatar }} style={styles.attendeeAvatar} />
+                                    {user.avatar && !imageError && user.avatar.trim() !== "" ? (
+                                        <Image source={{ uri: user.avatar }} style={styles.attendeeAvatar} onError={() => setImageError(true)} />
                                     ) : (
                                         <Ionicons name="person-circle-outline" size={36} color="#ccc" style={styles.attendeeAvatar} />
                                     )}
