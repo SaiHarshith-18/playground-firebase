@@ -10,7 +10,7 @@ import {
   Animated,
   Easing,
 } from "react-native";
-import MapView, { Marker, AnimatedRegion } from "react-native-maps";
+import MapView, { Marker, AnimatedRegion, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -212,24 +212,24 @@ export default function HomeScreen() {
   showsUserLocation
 >
   {events.map((event, idx) => (
-    <Marker
-      key={event.id}
-      coordinate={event.location}
-      // Use a custom marker for the current event
-      tracksViewChanges={false}
-    >
-      {idx === currentEventIndex ? (
-        // Big red marker for current event
-        <View style={styles.bigMarker}>
-          <Ionicons name="location-sharp" size={50} color="#FF3B30" />
-        </View>
-      ) : (
-        // Small gray marker for others
-        <View style={styles.smallMarker}>
-          <Ionicons name="location-sharp" size={28} color="#888" />
-        </View>
-      )}
-    </Marker>
+    <Marker key={event.id} coordinate={event.location} tracksViewChanges={false}>
+  <View style={idx === currentEventIndex ? styles.bigMarker : styles.smallMarker}>
+    <Ionicons
+      name="location-sharp"
+      size={idx === currentEventIndex ? 50 : 28}
+      color={idx === currentEventIndex ? "#FF3B30" : "#888"}
+    />
+  </View>
+
+  {idx === currentEventIndex && (
+    <Callout tooltip onPress={() => navigation.navigate("EventDetails", { event })}>
+      <View style={styles.calloutPopup}>
+        <Text style={styles.popupTitle}>{event.title}</Text>
+        <Text style={styles.popupLocation}>{event.location?.name || "Near you"}</Text>
+      </View>
+    </Callout>
+  )}
+</Marker>
   ))}
 </MapView>
 
@@ -456,4 +456,16 @@ smallMarker: {
     shadowOpacity: 0.2,
     shadowRadius: 2,
   },
+  calloutPopup: {
+  backgroundColor: 'white',
+  borderRadius: 12,
+  padding: 10,
+  width: 200,
+  alignItems: 'center',
+  shadowColor: '#000',
+  shadowOpacity: 0.2,
+  shadowOffset: { width: 0, height: 3 },
+  elevation: 5,
+},
+
 });
