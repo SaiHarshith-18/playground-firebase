@@ -16,11 +16,13 @@ import {
   updateDoc,
   arrayUnion,
   arrayRemove,
+  onSnapshot
 } from 'firebase/firestore';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
+import { RenderFriend } from './RenderFriend';
 
 export default function SuggestionsSection() {
   const [tab, setTab] = useState('Friends');
@@ -101,67 +103,7 @@ export default function SuggestionsSection() {
     navigation.navigate('Chat', { recipient: { ...friend, uid: friend.id } });
   };
 
-  const renderFriend = ({ item }) => {
-    const currentUserId = user?.uid;
-    const isFriend = linkedUsers.includes(item.id);
-    const hasSentRequest = item?.receivedRequests?.includes(currentUserId); // Correct!
-    const hasReceivedRequest = item?.sentRequests?.includes(currentUserId);
 
-    let actionButton;
-    if (isFriend) {
-      actionButton = (
-        <TouchableOpacity
-          style={[styles.friendAddButton, { backgroundColor: '#ccc' }]}
-          onPress={() => handleMessage(item)}
-        >
-          <Text style={styles.addButtonText}>Message</Text>
-        </TouchableOpacity>
-      );
-    } else if (hasSentRequest) {
-      actionButton = (
-        <View style={[styles.friendAddButton, { backgroundColor: '#999' }]}>
-          <Text style={styles.addButtonText}>Request Sent</Text>
-        </View>
-      );
-    } else if (hasReceivedRequest) {
-      actionButton = (
-        <TouchableOpacity
-          style={[styles.friendAddButton, { backgroundColor: '#4CAF50' }]}
-          onPress={() => handleAcceptRequest(item.id)}
-        >
-          <Text style={styles.addButtonText}>Accept</Text>
-        </TouchableOpacity>
-      );
-    } else {
-      actionButton = (
-        <TouchableOpacity
-          style={styles.friendAddButton}
-          onPress={() => handleAddFriend(item.id)}
-        >
-          <Text style={styles.addButtonText}>Add</Text>
-        </TouchableOpacity>
-      );
-    }
-
-
-    return (
-      <View style={styles.friendCard}>
-        {item.avatar ? (
-          <Image
-            source={{ uri: item.avatar }}
-            style={styles.friendAvatar}
-          />
-        ) : (
-          <Ionicons name="person-circle-outline" size={50} color="grey" style={styles.friendAvatar} />
-        )}
-        <View style={styles.friendInfo}>
-          <Text style={styles.friendName}>{item.fullName || 'Unnamed'}</Text>
-          <Text style={styles.friendAbout}>{item.about || 'No bio available'}</Text>
-        </View>
-        {actionButton}
-      </View>
-    );
-  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -185,13 +127,49 @@ export default function SuggestionsSection() {
             </TouchableOpacity>
           </View>
         ) : (
-          <FlatList
-            data={users.filter(u => !linkedUsers.includes(u.id))}
-            keyExtractor={(item) => item.id}
-            renderItem={renderFriend}
-            scrollEnabled={true}
-            contentContainerStyle={{ gap: 12 }}
-          />
+          <View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Suggestions</Text>
+              <FlatList
+                data={users.filter(u => !linkedUsers.includes(u.id))}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <RenderFriend
+                    item={item}
+                    user={user}
+                    linkedUsers={linkedUsers}
+                    onAddFriend={handleAddFriend}
+                    onAcceptRequest={handleAcceptRequest}
+                    onMessage={handleMessage}
+                  />
+                )}
+                ListEmptyComponent={<Text style={styles.emptyText}>No suggestions found.</Text>}
+                scrollEnabled={false}
+                contentContainerStyle={{ gap: 12 }}
+              />
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Your Friends</Text>
+              <FlatList
+                data={users.filter(u => linkedUsers.includes(u.id))}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <RenderFriend
+                    item={item}
+                    user={user}
+                    linkedUsers={linkedUsers}
+                    onAddFriend={handleAddFriend}
+                    onAcceptRequest={handleAcceptRequest}
+                    onMessage={handleMessage}
+                  />
+                )}
+                ListEmptyComponent={<Text style={styles.emptyText}>No friends yet.</Text>}
+                scrollEnabled={false}
+                contentContainerStyle={{ gap: 12 }}
+              />
+            </View>
+          </View>
         )}
       </View>
     </SafeAreaView>
