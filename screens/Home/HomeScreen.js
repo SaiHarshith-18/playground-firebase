@@ -66,11 +66,10 @@ export default function HomeScreen() {
         useNativeDriver: true,
       }).start();
     }).catch((e) => console.warn('pointForCoordinate error:', e));
-  }, 500); // delay slightly to ensure layout is done
+  }, 500);
 
   return () => clearTimeout(timeout);
 }, [currentEvent, mapRef.current]);
-
 
   useFocusEffect(
     useCallback(() => {
