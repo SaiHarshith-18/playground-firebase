@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { LOCATION_API_KEY, GEOCODING_API_KEY } from '@env';
+import { useRoute } from '@react-navigation/native';
 
 const GOOGLE_API_KEY = LOCATION_API_KEY;
 
@@ -29,7 +30,7 @@ export default function LocationPicker({ navigation }) {
   const [searchResults, setSearchResults] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const mapRef = useRef(null);
-
+const route = useRoute();
 
   useFocusEffect(
     useCallback(() => {
@@ -116,27 +117,24 @@ export default function LocationPicker({ navigation }) {
   };
 
   const handleConfirm = () => {
-    if (!selectedLocation) {
-      Alert.alert('No location selected', 'Tap on the map or select from list.');
-      return;
-    }
-    navigation.navigate({
-      name: 'CreateEvent',
-      params: {
-        selectedLocation: {
-          ...selectedLocation,
-          name:
-            selectedName ||
-            `Lat: ${selectedLocation.latitude.toFixed(4)}, Lng: ${selectedLocation.longitude.toFixed(4)}`,
-        },
-      },
-      merge: true,
-    });
+  if (!selectedLocation) {
+    Alert.alert('No location selected', 'Tap on the map or select from list.');
+    return;
+  }
+
+  const locationData = {
+    ...selectedLocation,
+    name:
+      selectedName ||
+      `Lat: ${selectedLocation.latitude.toFixed(4)}, Lng: ${selectedLocation.longitude.toFixed(4)}`
   };
 
-  if (loading || !region) {
-    return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />;
+  if (route.params?.onLocationSelected) {
+    route.params.onLocationSelected(locationData);
   }
+
+  navigation.goBack();
+};
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
