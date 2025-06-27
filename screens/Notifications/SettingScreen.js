@@ -4,8 +4,8 @@ import { List, Divider } from 'react-native-paper';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { signOut } from 'firebase/auth';
-import { AuthContext } from '../contexts/AuthContext';
-import { auth } from '../firebaseConfig';
+import { AuthContext } from '../../contexts/AuthContext';
+import { auth } from '../../firebaseConfig';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
@@ -28,7 +28,7 @@ export default function SettingsScreen() {
         <List.Item
           title="Edit Profile"
           left={() => <Ionicons name="person-circle-outline" size={22} color="#555" />}
-          onPress={() => navigation.navigate('Profile')}
+          onPress={() => navigation.navigate('Profiles')}
         />
 
         <List.Item
