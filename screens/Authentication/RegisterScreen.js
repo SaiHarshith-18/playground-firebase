@@ -24,7 +24,6 @@ export default function RegisterScreen({ navigation }) {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
       const user = userCredential.user;
-
       const userProfile = {
         fullName: name,
         email: user.email,
@@ -33,7 +32,6 @@ export default function RegisterScreen({ navigation }) {
         followers: 0,
         following: 0,
       };
-
       await setDoc(doc(db, 'users', user.uid), userProfile);
       Alert.alert('Success', 'Account created successfully!');
     } catch (err) {
@@ -44,11 +42,8 @@ export default function RegisterScreen({ navigation }) {
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-
-        {/* Card */}
         <View style={styles.card}>
           <Text style={styles.title}>Create Account</Text>
-
           <Text style={styles.label}>Full Name</Text>
           <TextInput
             style={styles.input}
@@ -57,7 +52,6 @@ export default function RegisterScreen({ navigation }) {
             onChangeText={setName}
             placeholderTextColor="#aaa"
           />
-
           <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
@@ -68,7 +62,6 @@ export default function RegisterScreen({ navigation }) {
             onChangeText={setEmail}
             placeholderTextColor="#aaa"
           />
-
           <Text style={styles.label}>Password</Text>
           <TextInput
             style={styles.input}
@@ -78,11 +71,9 @@ export default function RegisterScreen({ navigation }) {
             onChangeText={setPassword}
             placeholderTextColor="#aaa"
           />
-
           <TouchableOpacity style={styles.button} onPress={handleRegister}>
             <Text style={styles.buttonText}>Sign Up</Text>
           </TouchableOpacity>
-
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.link}>Have an account? <Text style={{ color: '#D44A16', fontWeight: '600' }}>Log In</Text></Text>
           </TouchableOpacity>
