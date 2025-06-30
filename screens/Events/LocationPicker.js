@@ -23,6 +23,7 @@ const GOOGLE_API_KEY = LOCATION_API_KEY;
 export default function LocationPicker({ navigation }) {
   const [region, setRegion] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [initialLocation, setInitialLocation] = useState(null);
   const [selectedName, setSelectedName] = useState("");
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
@@ -35,7 +36,6 @@ export default function LocationPicker({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
-
       (async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
@@ -47,21 +47,22 @@ export default function LocationPicker({ navigation }) {
         const coords = currentLocation.coords;
 
         if (isActive) {
+          const loc = {
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            name: "",
+          };
           setRegion({
             latitude: coords.latitude,
             longitude: coords.longitude,
             latitudeDelta: 0.01,
             longitudeDelta: 0.01,
           });
-          setSelectedLocation({
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-            name: "",
-          });
+          setSelectedLocation(loc);
+          setInitialLocation(loc);
           setLoading(false);
         }
       })();
-
       return () => {
         isActive = false;
       };
@@ -149,6 +150,12 @@ export default function LocationPicker({ navigation }) {
 
     navigation.goBack();
   };
+
+  const isLocationChanged =
+      initialLocation &&
+      selectedLocation &&
+      (initialLocation.latitude !== selectedLocation.latitude ||
+        initialLocation.longitude !== selectedLocation.longitude);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -241,10 +248,12 @@ export default function LocationPicker({ navigation }) {
       <TouchableOpacity
         style={[
           styles.confirmBtn,
-          !selectedLocation && { backgroundColor: "#ccc" },
+          (!selectedLocation || !isLocationChanged) && {
+            backgroundColor: "#ccc",
+          },
         ]}
         onPress={handleConfirm}
-        disabled={!selectedLocation}
+        disabled={!selectedLocation || !isLocationChanged}
       >
         <Text style={styles.confirmText}>Confirm Location</Text>
         {selectedLocation && (
