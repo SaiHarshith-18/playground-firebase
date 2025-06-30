@@ -154,7 +154,7 @@ export default function CreateEventScreen({ navigation, route }) {
         });
         Alert.alert("Success", "Event Created!");
       }
-      navigation.navigate("AllUserEvents");
+      navigation.navigate("MainApp", { screen: "Home" });
     } catch (error) {
       Alert.alert("Error", "Failed to save event");
     }

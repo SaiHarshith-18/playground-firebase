@@ -89,17 +89,25 @@ export default function EventDetails({ route, navigation }) {
     navigation.navigate("CreateEvent", { event, isEdit: true });
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     setMenuVisible(false);
     Alert.alert("Delete Event", "Are you sure?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
         style: "destructive",
-        onPress: async () => {
-          await deleteDoc(doc(db, "events", event.id));
-          Alert.alert("Deleted", "Event deleted");
-          navigation.goBack();
+        onPress: () => {
+          (async () => {
+            try {
+              await deleteDoc(doc(db, "events", event.id));
+              if (route.params?.onDelete) route.params.onDelete();
+              Alert.alert("Deleted", "Event deleted");
+              navigation.goBack();
+            } catch (e) {
+              Alert.alert("Error", "Failed to delete event.");
+              console.error("Delete event error:", e);
+            }
+          })();
         },
       },
     ]);
@@ -158,7 +166,7 @@ export default function EventDetails({ route, navigation }) {
           </Text>
 
           {/* Join Button only if not creator and not already joined */}
-          {!isCreator && !alreadyJoined && !event.isChallenging &&(
+          {!isCreator && !alreadyJoined && !event.isChallenging && (
             <TouchableOpacity
               onPress={handleJoin}
               style={styles.joinBtn}
