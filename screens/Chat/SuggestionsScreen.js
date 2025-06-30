@@ -32,29 +32,29 @@ export default function SuggestionsSection() {
   const navigation = useNavigation();
 
   useFocusEffect(
-    useCallback(() => {
-      const fetchUsers = async () => {
-        try {
-          const snapshot = await getDocs(collection(db, 'users'));
-          const allUsers = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          const currentUser = allUsers.find((u) => u.id === user?.uid);
-          const others = allUsers.filter((u) => u.id !== user?.uid);
+  useCallback(() => {
+    if (!user?.uid) return;
 
-          setLinkedUsers(currentUser?.friends || []);
-          setSentRequests(currentUser?.sentRequests || []);
-          setReceivedRequests(currentUser?.receivedRequests || []);
-          setUsers(others);
-        } catch (error) {
-          console.error('Error fetching users:', error);
-        }
-      };
+    const unsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
+      const allUsers = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
-      if (user?.uid) fetchUsers();
-    }, [user?.uid])
-  );
+      const currentUser = allUsers.find((u) => u.id === user.uid);
+      const others = allUsers.filter((u) => u.id !== user.uid);
+
+      setLinkedUsers(currentUser?.friends || []);
+      setSentRequests(currentUser?.sentRequests || []);
+      setReceivedRequests(currentUser?.receivedRequests || []);
+      setUsers(others);
+    }, (error) => {
+      console.error('Firestore snapshot error:', error);
+    });
+
+    return () => unsubscribe();
+  }, [user?.uid])
+);
 
   const handleAddFriend = async (friendId) => {
     try {
