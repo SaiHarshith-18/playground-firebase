@@ -43,41 +43,40 @@ export default function EventDetails({ route, navigation }) {
   );
 
   useEffect(() => {
-  const fetchAttendees = async () => {
-    const allIds = [
-      ...(event.attendees || []),
-      ...(event.invitedUsers || [])
-    ];
+    const fetchAttendees = async () => {
+      const allIds = [
+        ...(event.attendees || []),
+        ...(event.invitedUsers || []),
+      ];
 
-    // Filter out null/empty/invalid UIDs
-    const uniqueIds = Array.from(new Set(allIds)).filter(
-      uid => typeof uid === 'string' && uid.trim() !== ''
-    );
+      // Filter out null/empty/invalid UIDs
+      const uniqueIds = Array.from(new Set(allIds)).filter(
+        (uid) => typeof uid === "string" && uid.trim() !== ""
+      );
 
-    if (uniqueIds.length === 0) {
-      setAttendeeUsers([]);
-      return;
-    }
-
-    try {
-      const users = [];
-      for (const uid of uniqueIds) {
-        const userRef = doc(db, 'users', uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          users.push({ uid, ...userSnap.data() });
-        }
+      if (uniqueIds.length === 0) {
+        setAttendeeUsers([]);
+        return;
       }
-      setAttendeeUsers(users);
-    } catch (e) {
-      console.error('Failed to fetch attendees/invited users', e);
-      setAttendeeUsers([]);
-    }
-  };
 
-  fetchAttendees();
-}, [event.attendees, event.invitedUsers]);
+      try {
+        const users = [];
+        for (const uid of uniqueIds) {
+          const userRef = doc(db, "users", uid);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            users.push({ uid, ...userSnap.data() });
+          }
+        }
+        setAttendeeUsers(users);
+      } catch (e) {
+        console.error("Failed to fetch attendees/invited users", e);
+        setAttendeeUsers([]);
+      }
+    };
 
+    fetchAttendees();
+  }, [event.attendees, event.invitedUsers]);
 
   useEffect(() => {
     if (route.params?.event) {
@@ -181,6 +180,7 @@ export default function EventDetails({ route, navigation }) {
                 <View key={user.uid} style={styles.attendeeCard}>
                   <UserAvatar
                     avatar={user.avatar}
+                    size={40}
                     style={styles.attendeeAvatar}
                   />
                   <Text style={styles.attendeeName}>
@@ -256,9 +256,15 @@ const styles = StyleSheet.create({
     width: 70,
   },
   attendeeAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    borderWidth: 2,
+    borderColor: "#FF822B",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
     marginBottom: 4,
   },
   attendeeName: {
