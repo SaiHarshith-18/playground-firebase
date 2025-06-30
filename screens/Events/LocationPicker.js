@@ -152,15 +152,15 @@ export default function LocationPicker({ navigation }) {
   };
 
   const isLocationChanged =
-      initialLocation &&
-      selectedLocation &&
-      (initialLocation.latitude !== selectedLocation.latitude ||
-        initialLocation.longitude !== selectedLocation.longitude);
+    initialLocation &&
+    selectedLocation &&
+    (initialLocation.latitude !== selectedLocation.latitude ||
+      initialLocation.longitude !== selectedLocation.longitude);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={styles.searchContainer}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.navigate("MainApp", { screen: "Home" })}>
           <Ionicons name="arrow-back" size={28} color="black" />
         </TouchableOpacity>
         <View style={styles.searchBox}>
