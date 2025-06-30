@@ -28,7 +28,7 @@ export default function SettingsScreen() {
         <List.Item
           title="Edit Profile"
           left={() => <Ionicons name="person-circle-outline" size={22} color="#555" />}
-          onPress={() => navigation.navigate('Profiles')}
+          onPress={() => navigation.navigate('Profile')}
         />
 
         <List.Item
