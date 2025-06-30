@@ -158,7 +158,7 @@ export default function EventDetails({ route, navigation }) {
           </Text>
 
           {/* Join Button only if not creator and not already joined */}
-          {!isCreator && !alreadyJoined && (
+          {!isCreator && !alreadyJoined && !event.isChallenging &&(
             <TouchableOpacity
               onPress={handleJoin}
               style={styles.joinBtn}
