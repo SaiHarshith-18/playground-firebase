@@ -14,12 +14,24 @@ import MapView, { Marker, AnimatedRegion, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { doc, updateDoc, getDoc, addDoc, collection, serverTimestamp, getDocs } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
-import { AuthContext } from '../../contexts/AuthContext';
-import { useFocusEffect, useNavigation, useIsFocused } from '@react-navigation/native';
-import { useCallback } from 'react';
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  doc,
+  updateDoc,
+  getDoc,
+  addDoc,
+  collection,
+  serverTimestamp,
+  getDocs,
+} from "firebase/firestore";
+import { db } from "../../firebaseConfig";
+import { AuthContext } from "../../contexts/AuthContext";
+import {
+  useFocusEffect,
+  useNavigation,
+  useIsFocused,
+} from "@react-navigation/native";
+import { useCallback } from "react";
 
 export default function HomeScreen() {
   const mapRef = useRef(null);
@@ -49,27 +61,30 @@ export default function HomeScreen() {
     }
   }, [location]);
 
- useEffect(() => {
-  if (!mapRef.current || !currentEvent?.location) return;
+  useEffect(() => {
+    if (!mapRef.current || !currentEvent?.location) return;
 
-  const timeout = setTimeout(() => {
-    mapRef.current.pointForCoordinate({
-      latitude: currentEvent.location.latitude,
-      longitude: currentEvent.location.longitude,
-    }).then(point => {
-      setPopupPosition({ x: point.x, y: point.y });
-      fadeAnim.setValue(0);
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 500,
-        easing: Easing.out(Easing.exp),
-        useNativeDriver: true,
-      }).start();
-    }).catch((e) => console.warn('pointForCoordinate error:', e));
-  }, 500);
+    const timeout = setTimeout(() => {
+      mapRef.current
+        .pointForCoordinate({
+          latitude: currentEvent.location.latitude,
+          longitude: currentEvent.location.longitude,
+        })
+        .then((point) => {
+          setPopupPosition({ x: point.x, y: point.y });
+          fadeAnim.setValue(0);
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 500,
+            easing: Easing.out(Easing.exp),
+            useNativeDriver: true,
+          }).start();
+        })
+        .catch((e) => console.warn("pointForCoordinate error:", e));
+    }, 500);
 
-  return () => clearTimeout(timeout);
-}, [currentEvent, mapRef.current]);
+    return () => clearTimeout(timeout);
+  }, [currentEvent, mapRef.current]);
 
   useFocusEffect(
     useCallback(() => {
@@ -91,7 +106,7 @@ export default function HomeScreen() {
         });
 
         if (user?.uid) {
-          const userRef = doc(db, 'users', user.uid);
+          const userRef = doc(db, "users", user.uid);
           const userSnap = await getDoc(userRef);
           if (userSnap.exists() && userSnap.data().avatar) {
             setProfileImage(userSnap.data().avatar);
@@ -107,8 +122,8 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const snapshot = await getDocs(collection(db, 'events'));
-      setEvents(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      const snapshot = await getDocs(collection(db, "events"));
+      setEvents(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     };
     fetchEvents();
   }, []);
@@ -135,30 +150,34 @@ export default function HomeScreen() {
     if (!events.length || !mapRef.current || !markerPosition.current) return;
     const event = events[currentEventIndex];
     if (event?.location?.latitude && event?.location?.longitude) {
-      mapRef.current.animateToRegion({
-        latitude: event.location.latitude,
-        longitude: event.location.longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      }, 1000);
+      mapRef.current.animateToRegion(
+        {
+          latitude: event.location.latitude,
+          longitude: event.location.longitude,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        },
+        1000
+      );
 
-      markerPosition.current.timing({
-        latitude: event.location.latitude,
-        longitude: event.location.longitude,
-        duration: 1000,
-        useNativeDriver: false,
-      }).start();
+      markerPosition.current
+        .timing({
+          latitude: event.location.latitude,
+          longitude: event.location.longitude,
+          duration: 1000,
+          useNativeDriver: false,
+        })
+        .start();
     }
   }, [currentEventIndex, events]);
 
   const currentEvent = events[currentEventIndex];
 
-   const pickImage = async () => {
-  };
+  const pickImage = async () => {};
 
   const handleCreateEvent = async () => {
     try {
-      const eventRef = await addDoc(collection(db, 'events'), {
+      const eventRef = await addDoc(collection(db, "events"), {
         title,
         location,
         description,
@@ -168,10 +187,10 @@ export default function HomeScreen() {
         attendees: [user.uid],
         createdAt: serverTimestamp(),
       });
-      Alert.alert('Success', 'Event Created!');
+      Alert.alert("Success", "Event Created!");
       navigation.goBack();
     } catch (error) {
-      console.error('Error creating event:', error);
+      console.error("Error creating event:", error);
     }
   };
 
@@ -199,110 +218,136 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-     <MapView
-  ref={mapRef}
-  style={styles.map}
-  initialRegion={location ? {
-    latitude: location.latitude,
-    longitude: location.longitude,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-  } : undefined}
-  showsUserLocation
->
-  {events.map((event, idx) => (
-    <Marker key={event.id} coordinate={event.location} tracksViewChanges={false}>
-  <View style={idx === currentEventIndex ? styles.bigMarker : styles.smallMarker}>
-    <Ionicons
-      name="location-sharp"
-      size={idx === currentEventIndex ? 50 : 28}
-      color={idx === currentEventIndex ? "#FF3B30" : "#888"}
-    />
-  </View>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+      <MapView
+        ref={mapRef}
+        style={styles.map}
+        initialRegion={
+          location
+            ? {
+                latitude: location.latitude,
+                longitude: location.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }
+            : undefined
+        }
+        showsUserLocation
+      >
+        {events.map((event, idx) => (
+          <Marker
+            key={event.id}
+            coordinate={event.location}
+            tracksViewChanges={false}
+          >
+            <View
+              style={
+                idx === currentEventIndex
+                  ? styles.bigMarker
+                  : styles.smallMarker
+              }
+            >
+              <Ionicons
+                name="location-sharp"
+                size={idx === currentEventIndex ? 50 : 28}
+                color={idx === currentEventIndex ? "#FF3B30" : "#888"}
+              />
+            </View>
 
-  {idx === currentEventIndex && (
-    <Callout tooltip onPress={() => navigation.navigate("EventDetails", { event })}>
-      <View style={styles.calloutPopup}>
-        <Text style={styles.popupTitle}>{event.title}</Text>
-        <Text style={styles.popupLocation}>{event.location?.name || "Near you"}</Text>
-      </View>
-    </Callout>
-  )}
-</Marker>
-  ))}
-</MapView>
+            {idx === currentEventIndex && (
+              <Callout
+                tooltip
+                onPress={() => navigation.navigate("EventDetails", { event })}
+              >
+                <View style={styles.calloutPopup}>
+                  <Text style={styles.popupTitle}>{event.title}</Text>
+                  <Text style={styles.popupLocation}>
+                    {event.location?.name || "Near you"}
+                  </Text>
+                </View>
+              </Callout>
+            )}
+          </Marker>
+        ))}
+      </MapView>
 
-    {popupPosition && (
-  <Animated.View
-    style={{
-      position: 'absolute',
-      left: popupPosition.x-80,
-      top: popupPosition.y-80,
-      width: 200,
-      backgroundColor: 'white',
-      borderRadius: 12,
-      padding: 10,
-      shadowColor: '#000',
-      shadowOpacity: 0.2,
-      shadowOffset: { width: 0, height: 3 },
-      elevation: 5,
-      opacity: fadeAnim,
-      zIndex: 999,
-    }}
-  >
-<TouchableOpacity
-    onPress={() => navigation.navigate('EventDetails', { event: currentEvent })}
-    style={{ alignItems: 'center' }}
-  >
-    <Text style={{
-      fontWeight: 'bold',
-      color: '#FF822B',
-      fontSize: 17,
-      marginBottom: 4,
-      textAlign: 'center',
-    }}>
-      {currentEvent?.title}
-    </Text>
-    <Text style={{
-      fontSize: 13,
-      color: '#444',
-      textAlign: 'center',
-      marginBottom: 2,
-    }}>
-      {currentEvent?.location?.name || "Near you"}
-    </Text>
-  </TouchableOpacity>
-</Animated.View>
-    )}
+      {popupPosition && (
+        <Animated.View
+          style={{
+            position: "absolute",
+            left: popupPosition.x - 80,
+            top: popupPosition.y - 80,
+            width: 200,
+            backgroundColor: "white",
+            borderRadius: 12,
+            padding: 10,
+            shadowColor: "#000",
+            shadowOpacity: 0.2,
+            shadowOffset: { width: 0, height: 3 },
+            elevation: 5,
+            opacity: fadeAnim,
+            zIndex: 999,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("EventDetails", { event: currentEvent })
+            }
+            style={{ alignItems: "center" }}
+          >
+            <Text
+              style={{
+                fontWeight: "bold",
+                color: "#FF822B",
+                fontSize: 17,
+                marginBottom: 4,
+                textAlign: "center",
+              }}
+            >
+              {currentEvent?.title}
+            </Text>
+            <Text
+              style={{
+                fontSize: 13,
+                color: "#444",
+                textAlign: "center",
+                marginBottom: 2,
+              }}
+            >
+              {currentEvent?.location?.name || "Near you"}
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
- {/* Top Right Buttons */}
+      {/* Top Right Buttons */}
       <View style={styles.topRightContainer}>
         {/* Profile Icon */}
-        <View style={styles.profileContainer}>
-          <View style={styles.profileImageContainer}>
-            {profileImage ? (
-              <Image
-                source={{ uri: profileImage }}
-                style={styles.profileImage}
-              />
-            ) : (
-              <Ionicons name="person-circle-outline" size={48} color="grey" />
-            )}
-          </View>
-
-          {/* Small Camera Button */}
-          <TouchableOpacity style={styles.cameraButton} onPress={pickImage}>
-            <Ionicons name="camera" size={18} color="white" />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.profileContainer}
+          onPress={() => navigation.navigate("Profile")}
+          activeOpacity={0.7}
+        >
+            <View style={styles.profileImageContainer}>
+              {profileImage ? (
+                <Image
+                  source={{ uri: profileImage }}
+                  style={styles.profileImage}
+                />
+              ) : (
+                <Ionicons name="person-circle-outline" size={48} color="grey" />
+              )}
+            </View>
+        </TouchableOpacity>
 
         {/* Plus Icon */}
-        <TouchableOpacity style={styles.plusButton} onPress={() => navigation.navigate('CreateEvent')}>
-          <Feather name="plus" size={38} color="orange"/>
+        <TouchableOpacity
+          style={styles.plusButton}
+          onPress={() => navigation.navigate("CreateEvent")}
+        >
+          <Feather name="plus" size={38} color="orange" />
         </TouchableOpacity>
       </View>
-
     </SafeAreaView>
   );
 }
@@ -311,56 +356,56 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
   popupContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 30,
     left: 20,
     right: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   popup: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 18,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
     elevation: 6,
   },
   popupTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FF822B',
+    fontWeight: "bold",
+    color: "#FF822B",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   bigMarker: {
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: 'rgba(255,130,43,0.15)',
-  borderRadius: 30,
-  padding: 2,
-},
-smallMarker: {
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: 'rgba(200,200,200,0.10)',
-  borderRadius: 16,
-  padding: 1,
-},
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,130,43,0.15)",
+    borderRadius: 30,
+    padding: 2,
+  },
+  smallMarker: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(200,200,200,0.10)",
+    borderRadius: 16,
+    padding: 1,
+  },
   popupLocation: {
     fontSize: 14,
-    color: '#333',
+    color: "#333",
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   popupButton: {
-    backgroundColor: '#FF822B',
+    backgroundColor: "#FF822B",
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 24,
   },
   popupButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
   },
   topRightContainer: {
@@ -457,15 +502,14 @@ smallMarker: {
     shadowRadius: 2,
   },
   calloutPopup: {
-  backgroundColor: 'white',
-  borderRadius: 12,
-  padding: 10,
-  width: 200,
-  alignItems: 'center',
-  shadowColor: '#000',
-  shadowOpacity: 0.2,
-  shadowOffset: { width: 0, height: 3 },
-  elevation: 5,
-},
-
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 10,
+    width: 200,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 5,
+  },
 });
