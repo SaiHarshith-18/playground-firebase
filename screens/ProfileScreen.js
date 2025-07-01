@@ -318,7 +318,11 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.mediaPreviewRow}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.mediaPreviewRow}
+          >
             <TouchableOpacity
               onPress={addNewMedia}
               style={styles.previewAddBox}
@@ -345,7 +349,7 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               </View>
             ))}
-          </View>
+          </ScrollView>
 
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Today's Events</Text>
