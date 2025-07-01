@@ -28,35 +28,35 @@ export default function CalloutModal() {
   }, [isCalloutOpen]);
 
   const fetchChallengeEvents = async () => {
-  try {
-    const q = query(
-      collection(db, "events"),
-      where("isChallenging", "==", true)
-    );
-    const snapshot = await getDocs(q);
-    const now = new Date();
+    try {
+      const q = query(
+        collection(db, "events"),
+        where("isChallenging", "==", true)
+      );
+      const snapshot = await getDocs(q);
+      const now = new Date();
 
-    const result = snapshot.docs
-      .map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
-      .filter((event) => {
-        const eventDate = parseEventDateTime(event.date, event.time);
-        return eventDate >= now;
-      })
-      .sort((a, b) => {
-        const aDate = parseEventDateTime(a.date, a.time);
-        const bDate = parseEventDateTime(b.date, b.time);
-        return aDate - bDate;
-      })
-      .slice(0, 3);
+      const result = snapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .filter((event) => {
+          const eventDate = parseEventDateTime(event.date, event.time);
+          return eventDate >= now;
+        })
+        .sort((a, b) => {
+          const aDate = parseEventDateTime(a.date, a.time);
+          const bDate = parseEventDateTime(b.date, b.time);
+          return aDate - bDate;
+        })
+        .slice(0, 3);
 
-    setChallengeEvents(result);
-  } catch (error) {
-    console.error("Failed to fetch challenge events:", error);
-  }
-};
+      setChallengeEvents(result);
+    } catch (error) {
+      console.error("Failed to fetch challenge events:", error);
+    }
+  };
 
   const handleChallengeCreate = () => {
     closeCallout();
@@ -78,7 +78,17 @@ export default function CalloutModal() {
           >
             <Ionicons name="chevron-down" size={36} color="white" />
           </TouchableOpacity>
-          <Text style={styles.heading}>Challenge Events</Text>
+          <View style={styles.headerRow}>
+            <Text style={styles.heading}>Challenge Events</Text>
+            <TouchableOpacity
+              onPress={() => {
+                closeCallout();
+                navigation.navigate("AllUserEvents", { filter: "challenges" });
+              }}
+            >
+              <Text style={styles.seeAllText}>See All</Text>
+            </TouchableOpacity>
+          </View>
           <View style={{ marginTop: 16 }}>
             {challengeEvents.length === 0 ? (
               <Text
@@ -168,4 +178,17 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
+  headerRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 4,
+},
+seeAllText: {
+  color: "#fff",
+  fontSize: 14,
+  fontWeight: "bold",
+  textDecorationLine: "underline",
+  top: -5
+},
 });
