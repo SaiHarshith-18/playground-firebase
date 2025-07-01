@@ -152,6 +152,7 @@ export default function UserEventList() {
         return false;
       if (filters.distance && distance !== null && distance > filters.distance)
         return false;
+      if (filters.challenging && !event.isChallenging) return false;
       if (
         filters.gameType &&
         event.gametype?.toLowerCase() !== filters.gameType.toLowerCase()
@@ -316,7 +317,25 @@ export default function UserEventList() {
                   : null
               }
             />
-
+            <List.Item
+              onPress={() => {
+                const newChallenging = filters.challenging ? null : true;
+                setFilters((prev) => ({
+                  ...prev,
+                  challenging: newChallenging,
+                }));
+                setFilterMenuVisible(false);
+              }}
+              title="Challenging Events"
+              style={
+                filters.challenging ? { backgroundColor: "#FF822B" } : null
+              }
+              titleStyle={
+                filters.challenging
+                  ? { color: "#FFF", fontWeight: "bold" }
+                  : null
+              }
+            />
             {/* Time Range Filters */}
             {["today", "week", "month"].map((range) => (
               <List.Item
@@ -401,6 +420,7 @@ export default function UserEventList() {
                   timeRange: null,
                   role: "all",
                   status: "upcoming",
+                  challenging: null
                 });
                 setFilterMenuVisible(false);
                 setTimeout(applyFiltersAndSort, 0);
