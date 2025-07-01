@@ -14,6 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 import { EventCard } from "./EventCard";
+import { parseEventDateTime } from "../../utils/Date";
 
 export default function CalloutModal() {
   const { isCalloutOpen, closeCallout } = useCalloutModal();
@@ -27,21 +28,35 @@ export default function CalloutModal() {
   }, [isCalloutOpen]);
 
   const fetchChallengeEvents = async () => {
-    try {
-      const q = query(
-        collection(db, "events"),
-        where("isChallenging", "==", true)
-      );
-      const snapshot = await getDocs(q);
-      const result = snapshot.docs.map((doc) => ({
+  try {
+    const q = query(
+      collection(db, "events"),
+      where("isChallenging", "==", true)
+    );
+    const snapshot = await getDocs(q);
+    const now = new Date();
+
+    const result = snapshot.docs
+      .map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      }));
-      setChallengeEvents(result);
-    } catch (error) {
-      console.error("Failed to fetch challenge events:", error);
-    }
-  };
+      }))
+      .filter((event) => {
+        const eventDate = parseEventDateTime(event.date, event.time);
+        return eventDate >= now;
+      })
+      .sort((a, b) => {
+        const aDate = parseEventDateTime(a.date, a.time);
+        const bDate = parseEventDateTime(b.date, b.time);
+        return aDate - bDate;
+      })
+      .slice(0, 3);
+
+    setChallengeEvents(result);
+  } catch (error) {
+    console.error("Failed to fetch challenge events:", error);
+  }
+};
 
   const handleChallengeCreate = () => {
     closeCallout();
