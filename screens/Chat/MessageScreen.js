@@ -52,26 +52,17 @@ export default function MessageScreen() {
   }, [user]);
 
   useEffect(() => {
-    if (!search.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    const fetchSearchResults = async () => {
-      const snapshot = await getDocs(collection(db, 'users'));
-      const results = snapshot.docs
-        .filter(doc => {
-          const data = doc.data();
-          return (
-            doc.id !== user.uid &&
-            data.fullName &&
-            data.fullName.toLowerCase().includes(search.toLowerCase())
-          );
-        })
-        .map(doc => ({ uid: doc.id, ...doc.data() }));
-      setSearchResults(results);
-    };
-    fetchSearchResults();
-  }, [search, user.uid]);
+  if (!search.trim()) {
+    setSearchResults([]);
+    return;
+  }
+  // Only search among connected users (friends)
+  const results = connectedUsers.filter(user =>
+    user.fullName &&
+    user.fullName.toLowerCase().includes(search.toLowerCase())
+  );
+  setSearchResults(results);
+}, [search, connectedUsers]);
 
   const handleSendRequest = async (targetUser) => {
     const userRef = doc(db, 'users', user.uid);
@@ -174,53 +165,69 @@ export default function MessageScreen() {
     );
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={{ paddingHorizontal: 16 }}>
-        <Text style={styles.title}>Messages</Text>
-        <TextInput
-          style={styles.searchInput}
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Search by name..."
-          placeholderTextColor="#888"
-        />
-        {search.trim() ? (
-          <>
-            <Text style={styles.subHeading}>Search Results</Text>
+return (
+  <SafeAreaView style={styles.container}>
+    <View style={{ paddingHorizontal: 16 }}>
+      <Text style={styles.title}>Messages</Text>
+      <TextInput
+        style={styles.searchInput}
+        value={search}
+        onChangeText={setSearch}
+        placeholder="Search by name..."
+        placeholderTextColor="#888"
+      />
+      {search.trim() ? (
+        <>
+          <Text style={styles.subHeading}>Search Results</Text>
+          {searchResults.length === 0 ? (
+            <View style={{ alignItems: 'center', marginTop: 40 }}>
+              <Text style={{ color: '#888', marginBottom: 16 }}>
+                No friends found.
+              </Text>
+              <TouchableOpacity
+                style={styles.connectBtn}
+                onPress={() => navigation.navigate('Suggestions')}
+              >
+                <Ionicons name="person-add" size={18} color="#fff" />
+                <Text style={styles.connectBtnText}>Connect with more people</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
             <FlatList
               data={searchResults}
               keyExtractor={item => item.uid}
               renderItem={renderUserItem}
             />
-          </>
-        ) : (
-          <>
-            <Text style={styles.subHeading}>Your Friends</Text>
+          )}
+        </>
+      ) : (
+        <>
+          <Text style={styles.subHeading}>Your Friends</Text>
+          {connectedUsers.length === 0 ? (
+            <View style={{ alignItems: 'center', marginTop: 40 }}>
+              <Text style={{ color: '#888', marginBottom: 16 }}>
+                You have no friends yet.
+              </Text>
+              <TouchableOpacity
+                style={styles.connectBtn}
+                onPress={() => navigation.navigate('Suggestions')}
+              >
+                <Ionicons name="person-add" size={18} color="#fff" />
+                <Text style={styles.connectBtnText}>Connect with more people</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
             <FlatList
               data={connectedUsers}
               keyExtractor={item => item.uid}
-              renderItem={({ item }) => (
-                <View style={styles.userCard}>
-                  <Text style={styles.userName}>{item.fullName}</Text>
-                  <TouchableOpacity style={styles.messageBtn} onPress={() => navigateToChat(item)}>
-                    <Ionicons name="chatbox-ellipses-outline" size={20} color="#fff" />
-                    <Text style={styles.connectBtnText}>Chat</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            />
-            <Text style={styles.subHeading}>Suggestions for You</Text>
-            <FlatList
-              data={suggestedUsers}
-              keyExtractor={item => item.uid}
               renderItem={renderUserItem}
             />
-          </>
-        )}
-      </View>
-    </SafeAreaView>
-  );
+          )}
+        </>
+      )}
+    </View>
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
