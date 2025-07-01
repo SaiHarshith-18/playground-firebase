@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   View,
@@ -7,13 +7,13 @@ import {
   Text,
   FlatList,
   Platform,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useCalloutModal } from '../../contexts/callOutModalContext';
-import { useNavigation } from '@react-navigation/native';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
-import {EventCard} from './EventCard';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useCalloutModal } from "../../contexts/callOutModalContext";
+import { useNavigation } from "@react-navigation/native";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../firebaseConfig";
+import { EventCard } from "./EventCard";
 
 export default function CalloutModal() {
   const { isCalloutOpen, closeCallout } = useCalloutModal();
@@ -28,18 +28,24 @@ export default function CalloutModal() {
 
   const fetchChallengeEvents = async () => {
     try {
-      const q = query(collection(db, 'events'), where('isChallenging', '==', true));
+      const q = query(
+        collection(db, "events"),
+        where("isChallenging", "==", true)
+      );
       const snapshot = await getDocs(q);
-      const result = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const result = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setChallengeEvents(result);
     } catch (error) {
-      console.error('Failed to fetch challenge events:', error);
+      console.error("Failed to fetch challenge events:", error);
     }
   };
 
   const handleChallengeCreate = () => {
     closeCallout();
-    navigation.navigate('SelectUser', { isChallenge: true });
+    navigation.navigate("SelectUser", { isChallenge: true });
   };
 
   return (
@@ -51,28 +57,40 @@ export default function CalloutModal() {
     >
       <View style={styles.overlay}>
         <View style={styles.modalContent}>
-          <TouchableOpacity style={styles.downArrowContainer} onPress={closeCallout}>
+          <TouchableOpacity
+            style={styles.downArrowContainer}
+            onPress={closeCallout}
+          >
             <Ionicons name="chevron-down" size={36} color="white" />
           </TouchableOpacity>
           <Text style={styles.heading}>Challenge Events</Text>
           <View style={{ marginTop: 16 }}>
             {challengeEvents.length === 0 ? (
-              <Text style={{ textAlign: 'center', color: '#888', marginTop: 20 }}>No challenge events found.</Text>
+              <Text
+                style={{ textAlign: "center", color: "#888", marginTop: 20 }}
+              >
+                No challenge events found.
+              </Text>
             ) : (
-              challengeEvents.map(event => (
+              challengeEvents.slice(0, 3).map((event) => (
                 <EventCard
                   key={event.id}
                   event={event}
                   userId={null}
                   onViewDetails={(selectedEvent) => {
                     closeCallout();
-                    navigation.navigate('EventDetails', { event: selectedEvent });
+                    navigation.navigate("EventDetails", {
+                      event: selectedEvent,
+                    });
                   }}
                 />
               ))
             )}
           </View>
-          <TouchableOpacity style={styles.challengeButton} onPress={handleChallengeCreate}>
+          <TouchableOpacity
+            style={styles.challengeButton}
+            onPress={handleChallengeCreate}
+          >
             <Text style={styles.buttonText}>Challenge Someone</Text>
           </TouchableOpacity>
         </View>
@@ -84,55 +102,55 @@ export default function CalloutModal() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.25)',
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.25)",
   },
   modalContent: {
-    backgroundColor: '#FF822B',
+    backgroundColor: "#FF822B",
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     paddingTop: 48,
     paddingHorizontal: 16,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
-    height: '90%',
+    paddingBottom: Platform.OS === "ios" ? 32 : 16,
+    height: "90%",
   },
   downArrowContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 10,
-    alignSelf: 'center',
+    alignSelf: "center",
     zIndex: 10,
   },
   heading: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginBottom: 12,
   },
   eventCard: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 12,
     borderRadius: 8,
     marginBottom: 10,
   },
   eventTitle: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 16,
   },
   eventDetail: {
-    color: '#666',
+    color: "#666",
     fontSize: 13,
     marginTop: 2,
   },
   challengeButton: {
     marginTop: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 14,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonText: {
-    color: '#FF822B',
-    fontWeight: 'bold',
+    color: "#FF822B",
+    fontWeight: "bold",
     fontSize: 16,
   },
 });

@@ -202,7 +202,7 @@ export default function SuggestionsSection() {
             </View>
         ) : (
           <View>
-            <Text style={styles.sectionTitle}>Suggestions</Text>
+            {/* <Text style={styles.sectionTitle}>Suggestions</Text> */}
             <FlatList
               data={suggestions}
               keyExtractor={(item) => item.id}
@@ -213,7 +213,9 @@ export default function SuggestionsSection() {
                 <Text style={{ textAlign: "center" }}>No suggestions.</Text>
               }
             />
-            <Text style={styles.sectionTitle}>Your Friends</Text>
+            {!suggestions.length > 5 && (
+              <>
+                <Text style={styles.sectionTitle}>Your Friends</Text>
             <FlatList
               data={friends}
               keyExtractor={(item) => item.id}
@@ -224,6 +226,8 @@ export default function SuggestionsSection() {
                 <Text style={{ textAlign: "center" }}>No friends yet.</Text>
               }
             />
+            </>
+            )}
           </View>
         )}
       </View>
