@@ -21,6 +21,7 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { db } from "../../firebaseConfig";
 import { AuthContext } from "../../contexts/AuthContext";
+import UserAvatar from "../../utils/UserAvatar";
 
 export default function SuggestionsSection() {
   const [tab, setTab] = useState("Friends");
@@ -149,16 +150,7 @@ export default function SuggestionsSection() {
 
     return (
       <View style={styles.friendCard}>
-        {item.avatar ? (
-          <Image source={{ uri: item.avatar }} style={styles.friendAvatar} />
-        ) : (
-          <Ionicons
-            name="person-circle-outline"
-            size={50}
-            color="grey"
-            style={styles.friendAvatar}
-          />
-        )}
+        <UserAvatar avatar={item.avatar} size={50} style={styles.friendAvatar} />
         <View style={styles.friendInfo}>
           <Text style={styles.friendName}>{item.fullName || "Unnamed"}</Text>
           <Text style={styles.friendAbout}>

@@ -56,7 +56,7 @@ export default function SelectUserScreen({ route }) {
         onPress={() => handleUserPress(item)}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <UserAvatar avatar={item.avatar} style={styles.friendAvatar} />
+          <UserAvatar avatar={item.avatar} style={styles.friendAvatar} size={36}/>
           <Text style={styles.userName}>
             {item.fullName || item.name || "User"}
           </Text>
