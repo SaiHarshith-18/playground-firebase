@@ -31,7 +31,6 @@ export default function CreateEventScreen({ navigation, route }) {
 
   const [title, setTitle] = useState("");
   const [gameType, setGameType] = useState("");
-  const [role, setRole] = useState("");
   const [location, setLocation] = useState(null);
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
@@ -61,7 +60,6 @@ export default function CreateEventScreen({ navigation, route }) {
       setDate(editingEvent.date || "");
       setTime(editingEvent.time || "");
       setGameType(editingEvent.gameType || "");
-      setRole(editingEvent.role || "");
     }
   }, [editingEvent]);
 
@@ -131,7 +129,6 @@ export default function CreateEventScreen({ navigation, route }) {
           date,
           time,
           gameType,
-          role,
         });
         // Fetch the updated event from Firestore
         const updatedSnap = await getDoc(doc(db, "events", editingEvent.id));
@@ -145,7 +142,6 @@ export default function CreateEventScreen({ navigation, route }) {
           date,
           time,
           gameType,
-          role,
           createdBy: user.uid,
           attendees: [user.uid],
           invitedUsers,
@@ -203,12 +199,6 @@ export default function CreateEventScreen({ navigation, route }) {
             />
           ))}
         </Menu>
-        <TextInput
-          placeholder="Role"
-          value={role}
-          onChangeText={setRole}
-          style={styles.input}
-        />
         <TouchableOpacity
           onPress={openLocationPicker}
           style={styles.locationInput}

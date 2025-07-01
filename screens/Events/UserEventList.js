@@ -181,6 +181,8 @@ export default function UserEventList() {
         return false;
       if (filters.status === "upcoming" && dt < now) return false;
       if (filters.status === "past" && dt >= now) return false;
+
+      // Role filtering logic (no event.role property)
       if (filters.role === "creator" && event.createdBy !== user.uid)
         return false;
       if (
@@ -349,7 +351,7 @@ export default function UserEventList() {
               <List.Item
                 key={role}
                 onPress={() => {
-                  const newRole = filters.role === role ? "all" : role;
+                  const newRole = filters.role === role ? null : role;
                   setFilters((prev) => ({ ...prev, role: newRole }));
                   setFilterMenuVisible(false);
                 }}
