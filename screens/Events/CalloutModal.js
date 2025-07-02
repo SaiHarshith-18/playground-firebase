@@ -15,6 +15,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 import { EventCard } from "./EventCard";
 import { parseEventDateTime } from "../../utils/Date";
+import { openMap } from "../../utils/Location";
 
 export default function CalloutModal() {
   const { isCalloutOpen, closeCallout } = useCalloutModal();
@@ -102,11 +103,12 @@ export default function CalloutModal() {
                   key={event.id}
                   event={event}
                   userId={null}
+                  onLocationPress={openMap}
                   onViewDetails={(selectedEvent) => {
-                    closeCallout();
-                    navigation.navigate("EventDetails", {
+                  closeCallout();                    
+                  navigation.navigate("EventDetails", {
                       event: selectedEvent,
-                    });
+                    })
                   }}
                 />
               ))
@@ -179,16 +181,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   headerRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 4,
-},
-seeAllText: {
-  color: "#fff",
-  fontSize: 14,
-  fontWeight: "bold",
-  textDecorationLine: "underline",
-  top: -5
-},
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  seeAllText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+    textDecorationLine: "underline",
+    top: -5,
+  },
 });

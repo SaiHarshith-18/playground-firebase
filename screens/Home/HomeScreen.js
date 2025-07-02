@@ -6,15 +6,15 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Text,
-  Modal,
   Animated,
   Easing,
+  Dimensions
 } from "react-native";
-import MapView, { Marker, AnimatedRegion, Callout } from "react-native-maps";
+import MapView, { Marker, AnimatedRegion } from "react-native-maps";
 import * as Location from "expo-location";
 import { Ionicons, Feather } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
+import RedPin from "../../assets/location_pin.png";
 import {
   doc,
   updateDoc,
@@ -26,16 +26,11 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 import { AuthContext } from "../../contexts/AuthContext";
-import {
-  useFocusEffect,
-  useNavigation,
-  useIsFocused,
-} from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useCallback } from "react";
 
 export default function HomeScreen() {
   const mapRef = useRef(null);
-  const isFocused = useIsFocused();
   const { user } = useContext(AuthContext);
   const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,47 +39,9 @@ export default function HomeScreen() {
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
   const [popupVisible, setPopupVisible] = useState(true);
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-
   const navigation = useNavigation();
 
-  const markerPosition = useRef(null);
-
-  useEffect(() => {
-    if (location && !markerPosition.current) {
-      markerPosition.current = new AnimatedRegion({
-        latitude: location.latitude,
-        longitude: location.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      });
-    }
-  }, [location]);
-
-  useEffect(() => {
-    if (!mapRef.current || !currentEvent?.location) return;
-
-    const timeout = setTimeout(() => {
-      mapRef.current
-        .pointForCoordinate({
-          latitude: currentEvent.location.latitude,
-          longitude: currentEvent.location.longitude,
-        })
-        .then((point) => {
-          setPopupPosition({ x: point.x, y: point.y });
-          fadeAnim.setValue(0);
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 500,
-            easing: Easing.out(Easing.exp),
-            useNativeDriver: true,
-          }).start();
-        })
-        .catch((e) => console.warn("pointForCoordinate error:", e));
-    }, 500);
-
-    return () => clearTimeout(timeout);
-  }, [currentEvent, mapRef.current]);
+  const currentEvent = events[currentEventIndex];
 
   useFocusEffect(
     useCallback(() => {
@@ -121,6 +78,20 @@ export default function HomeScreen() {
   );
 
   useEffect(() => {
+  if (!mapRef.current || !currentEvent?.location) return;
+
+  mapRef.current.animateToRegion(
+    {
+      latitude: currentEvent.location.latitude,
+      longitude: currentEvent.location.longitude,
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05,
+    },
+    1000 // duration in ms
+  );
+}, [currentEvent]);
+
+  useEffect(() => {
     const fetchEvents = async () => {
       const snapshot = await getDocs(collection(db, "events"));
       setEvents(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
@@ -135,9 +106,10 @@ export default function HomeScreen() {
       setTimeout(() => {
         setCurrentEventIndex((prev) => (prev + 1) % events.length);
         setPopupVisible(true);
+        fadeAnim.setValue(0);
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 600,
+          duration: 500,
           easing: Easing.out(Easing.exp),
           useNativeDriver: true,
         }).start();
@@ -145,54 +117,6 @@ export default function HomeScreen() {
     }, 5000);
     return () => clearInterval(interval);
   }, [events, location]);
-
-  useEffect(() => {
-    if (!events.length || !mapRef.current || !markerPosition.current) return;
-    const event = events[currentEventIndex];
-    if (event?.location?.latitude && event?.location?.longitude) {
-      mapRef.current.animateToRegion(
-        {
-          latitude: event.location.latitude,
-          longitude: event.location.longitude,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        },
-        1000
-      );
-
-      markerPosition.current
-        .timing({
-          latitude: event.location.latitude,
-          longitude: event.location.longitude,
-          duration: 1000,
-          useNativeDriver: false,
-        })
-        .start();
-    }
-  }, [currentEventIndex, events]);
-
-  const currentEvent = events[currentEventIndex];
-
-  const pickImage = async () => {};
-
-  const handleCreateEvent = async () => {
-    try {
-      const eventRef = await addDoc(collection(db, "events"), {
-        title,
-        location,
-        description,
-        date,
-        time,
-        createdBy: user.uid,
-        attendees: [user.uid],
-        createdAt: serverTimestamp(),
-      });
-      Alert.alert("Success", "Event Created!");
-      navigation.goBack();
-    } catch (error) {
-      console.error("Error creating event:", error);
-    }
-  };
 
   if (loading) {
     return (
@@ -210,28 +134,17 @@ export default function HomeScreen() {
     );
   }
 
-  const initialRegion = {
-    latitude: location.latitude,
-    longitude: location.longitude,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
-  };
-
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <MapView
         ref={mapRef}
         style={styles.map}
-        initialRegion={
-          location
-            ? {
-                latitude: location.latitude,
-                longitude: location.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }
-            : undefined
-        }
+        initialRegion={{
+          latitude: location.latitude,
+          longitude: location.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }}
         showsUserLocation
       >
         {events.map((event, idx) => (
@@ -242,105 +155,72 @@ export default function HomeScreen() {
           >
             <View
               style={
-                idx === currentEventIndex
-                  ? styles.bigMarker
-                  : styles.smallMarker
+                 idx === currentEventIndex ? styles.bigMarker : styles.smallMarker
               }
             >
-              <Ionicons
-                name="location-sharp"
-                size={idx === currentEventIndex ? 50 : 28}
-                color={idx === currentEventIndex ? "#FF3B30" : "#888"}
+              <Image
+                source={RedPin}
+                style={{
+                  width: currentEventIndex ? idx === currentEventIndex ? 70 : 20 : 40,
+                  height: currentEventIndex ? idx === currentEventIndex ? 70 : 20 : 40,
+                  resizeMode: "contain",
+                }}
               />
             </View>
-
-            {idx === currentEventIndex && (
-              <Callout
-                tooltip
-                onPress={() => navigation.navigate("EventDetails", { event })}
-              >
-                <View style={styles.calloutPopup}>
-                  <Text style={styles.popupTitle}>{event.title}</Text>
-                  <Text style={styles.popupLocation}>
-                    {event.location?.name || "Near you"}
-                  </Text>
-                </View>
-              </Callout>
-            )}
           </Marker>
         ))}
       </MapView>
 
-      {popupPosition && (
+      {popupVisible && currentEvent && (
         <Animated.View
           style={{
             position: "absolute",
-            left: popupPosition.x - 80,
-            top: popupPosition.y - 80,
-            width: 200,
-            backgroundColor: "white",
-            borderRadius: 12,
-            padding: 10,
-            shadowColor: "#000",
-            shadowOpacity: 0.2,
-            shadowOffset: { width: 0, height: 3 },
-            elevation: 5,
+            top: 250,
+            left: 0,
+            right: 0,
+            alignItems: "center",
             opacity: fadeAnim,
             zIndex: 999,
           }}
         >
           <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("EventDetails", { event: currentEvent })
-            }
-            style={{ alignItems: "center" }}
+            onPress={() => navigation.navigate("EventDetails", { event: currentEvent })}
+            style={{
+              backgroundColor: "white",
+              borderRadius: 12,
+              padding: 10,
+              width: 240,
+              shadowColor: "#000",
+              shadowOpacity: 0.2,
+              shadowOffset: { width: 0, height: 3 },
+              elevation: 5,
+            }}
           >
-            <Text
-              style={{
-                fontWeight: "bold",
-                color: "#FF822B",
-                fontSize: 17,
-                marginBottom: 4,
-                textAlign: "center",
-              }}
-            >
-              {currentEvent?.title}
+            <Text style={{ fontWeight: "bold", color: "#FF822B", fontSize: 17, textAlign: "center" }}>
+              {currentEvent.title}
             </Text>
-            <Text
-              style={{
-                fontSize: 13,
-                color: "#444",
-                textAlign: "center",
-                marginBottom: 2,
-              }}
-            >
-              {currentEvent?.location?.name || "Near you"}
+            <Text style={{ fontSize: 13, color: "#444", textAlign: "center" }}>
+              {currentEvent.location?.name || "Near you"}
             </Text>
           </TouchableOpacity>
         </Animated.View>
       )}
 
-      {/* Top Right Buttons */}
       <View style={styles.topRightContainer}>
-        {/* Profile Icon */}
         <TouchableOpacity
           style={styles.profileContainer}
           onPress={() => navigation.navigate("Profile")}
           activeOpacity={0.7}
         >
-            <View style={styles.profileImageContainer}>
-              {profileImage ? (
-                <Image
-                  source={{ uri: profileImage }}
-                  style={styles.profileImage}
-                />
-              ) : (
-                <Ionicons name="person-circle-outline" size={48} color="grey" />
-              )}
-            </View>
+          <View style={styles.profileImageContainer}>
+            {profileImage ? (
+              <Image source={{ uri: profileImage }} style={styles.profileImage} />
+            ) : (
+              <Ionicons name="person-circle-outline" size={48} color="grey" />
+            )}
+          </View>
         </TouchableOpacity>
 
-        {/* Plus Icon */}
         <TouchableOpacity
           style={styles.plusButton}
           onPress={() => navigation.navigate("CreateEvent")}
@@ -355,33 +235,16 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
-  popupContainer: {
-    position: "absolute",
-    bottom: 30,
-    left: 20,
-    right: 20,
-    alignItems: "center",
+  loadingContainer: {
+    flex: 1,
     justifyContent: "center",
-  },
-  popup: {
-    backgroundColor: "#fff",
-    padding: 18,
-    borderRadius: 12,
     alignItems: "center",
-    elevation: 6,
-  },
-  popupTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FF822B",
-    marginBottom: 8,
-    textAlign: "center",
   },
   bigMarker: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255,130,43,0.15)",
-    borderRadius: 30,
+    backgroundColor: "rgba(255, 59, 48, 0.15)",
+    borderRadius: 40,
     padding: 2,
   },
   smallMarker: {
@@ -390,85 +253,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(200,200,200,0.10)",
     borderRadius: 16,
     padding: 1,
-  },
-  popupLocation: {
-    fontSize: 14,
-    color: "#333",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  popupButton: {
-    backgroundColor: "#FF822B",
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-  },
-  popupButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  topRightContainer: {
-    position: "absolute",
-    top: 60,
-    right: 30,
-    flex: 1,
-    flexDirection: "row-reverse",
-    gap: 13,
-    alignItems: "center",
-  },
-  topButton: {
-    marginBottom: 10,
-    backgroundColor: "white",
-    padding: 8,
-    borderRadius: 50,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  topButtonImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  plusButton: {
-    backgroundColor: "white",
-    padding: 6,
-    borderRadius: 30,
-    borderColor: "grey",
-    borderWidth: 1,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    marginBottom: 15,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  calloutButton: {
-    position: "absolute",
-    bottom: 40,
-    alignSelf: "center",
-    backgroundColor: "white",
-    padding: 10,
-    borderRadius: 50,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  calloutImage: {
-    width: 70,
-    height: 70,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   profileContainer: {
     position: "relative",
@@ -485,31 +269,27 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 40,
   },
-  cameraButton: {
-    position: "absolute",
-    bottom: -10,
-    right: -10,
-    backgroundColor: "grey",
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
-  calloutPopup: {
+  plusButton: {
     backgroundColor: "white",
-    borderRadius: 12,
-    padding: 10,
-    width: 200,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 3 },
+    padding: 6,
+    borderRadius: 30,
+    borderColor: "grey",
+    borderWidth: 1,
     elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    marginBottom: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  topRightContainer: {
+    position: "absolute",
+    top: 60,
+    right: 30,
+    flexDirection: "row-reverse",
+    gap: 13,
+    alignItems: "center",
   },
 });
