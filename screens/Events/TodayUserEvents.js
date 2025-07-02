@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import {
   View,
   Text,
@@ -8,6 +9,7 @@ import {
   Image,
   Platform,
   Linking,
+  ScrollView,
 } from "react-native";
 import { db } from "../../firebaseConfig";
 import { doc, deleteDoc } from "firebase/firestore";
@@ -89,22 +91,45 @@ export default function TodayUserEvents({ navigation }) {
 
   return (
     <View style={styles.eventsContainer}>
-      {todayEvents.map((event) => (
-        <EventCard
-          key={event.id}
-          event={event}
-          userId={user.uid}
-          onLocationPress={openMap}
-          onEdit={handleEditEvent}
-          onDelete={handleDeleteEvent}
-          onViewDetails={(selectedEvent) =>
-            navigation.navigate("EventDetails", {
-              event: selectedEvent,
-              userId: user.uid,
-            })
-          }
+      <ScrollView
+        horizontal
+        style={styles.eventsContainer}
+        contentContainerStyle={{ gap: 10, paddingHorizontal: 4 }}
+        showsHorizontalScrollIndicator={false}
+      >
+        {todayEvents.map((event) => (
+          <EventCard
+            key={event.id}
+            event={event}
+            userId={user.uid}
+            onLocationPress={openMap}
+            onEdit={handleEditEvent}
+            onDelete={handleDeleteEvent}
+            onViewDetails={(selectedEvent) =>
+              navigation.navigate("EventDetails", {
+                event: selectedEvent,
+                userId: user.uid,
+              })
+            }
+          />
+        ))}
+      </ScrollView>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("CreateEvent")}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          alignSelf: "center",
+        }}
+      >
+        <Ionicons
+          name="football-outline"
+          size={30}
+          color="#FF822B"
+          style={{ marginRight: 6 }}
         />
-      ))}
+        <Text style={styles.createEventLink}>Create Event</Text>
+      </TouchableOpacity>
     </View>
   );
 }

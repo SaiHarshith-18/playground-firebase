@@ -48,23 +48,6 @@ export function EventCard({ event, onLocationPress, userId, onViewDetails }) {
 }
 
 const styles = StyleSheet.create({
-  actionRow: {
-    flexDirection: 'row',
-    marginTop: 8,
-    gap: 10,
-  },
-  actionBtn: {
-    backgroundColor: 'grey',
-    paddingVertical: 4,
-    paddingHorizontal: 14,
-    borderRadius: 6,
-    marginRight: 8,
-  },
-  actionText: {
-    color: '#FF822B',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
   eventCard: {
     flexDirection: 'row',
     backgroundColor: '#fff',
@@ -76,6 +59,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    width: '100%',
+    maxWidth: '100%',
+    flexWrap: 'wrap',
   },
   dateBlock: {
     width: 48,
@@ -83,17 +69,53 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 14,
   },
-  day: { fontSize: 24, fontWeight: 'bold', color: '#FF822B' },
-  month: { fontSize: 12, color: '#888', marginTop: 0 },
-  eventContent: { flex: 1 },
+  day: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FF822B',
+  },
+  month: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 0,
+  },
+  eventContent: {
+    flex: 1,
+    flexShrink: 1,
+  },
   titleTimeRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 4,
   },
-  eventTitle: { fontWeight: 'bold', fontSize: 16, flex: 1 },
-  eventTime: { fontSize: 14, color: '#444', marginLeft: 12 },
-  eventLocation: { fontSize: 14, color: '#FF822B', marginVertical: 2, textDecorationLine: 'underline' },
-  eventDescription: { fontSize: 13, color: '#666', marginTop: 4 },
+  eventTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    flex: 1,
+    flexWrap: 'wrap',
+  },
+  eventTime: {
+    fontSize: 14,
+    color: '#444',
+    marginLeft: 12,
+    flexShrink: 0,
+  },
+  eventLocation: {
+    fontSize: 14,
+    color: '#FF822B',
+    marginVertical: 2,
+    textDecorationLine: 'underline',
+    flexShrink: 1,
+    flexWrap: 'wrap',
+    width: '100%',
+  },
+  eventDescription: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 4,
+    flexWrap: 'wrap',
+    width: '100%',
+  },
 });
