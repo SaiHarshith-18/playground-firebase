@@ -34,22 +34,44 @@ export default function ChatScreen({ route, navigation }) {
 
   const chatId = user && chatUser ? [user.uid, chatUser.uid].sort().join('_') : null;
 
-  useEffect(() => {
-    if (!chatId) return;
-    setDoc(
-      doc(db, 'chats', chatId),
-      { users: [user.uid, chatUser.uid], createdAt: serverTimestamp() },
-      { merge: true }
-    ).then(() => {
+ useEffect(() => {
+  let unsubscribe;
+
+  const initChat = async () => {
+    if (!user || !chatUser || !chatId) return;
+
+    try {
+      const chatRef = doc(db, 'chats', chatId);
+      await setDoc(chatRef, {
+        users: [user.uid, chatUser.uid],
+        createdAt: serverTimestamp(),
+      }, { merge: true });
+
       const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
-      const unsubscribe = onSnapshot(q, snapshot => {
-        setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      });
-      return unsubscribe;
-    });
-  }, [chatId]);
+      unsubscribe = onSnapshot(
+        q,
+        snapshot => {
+          setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        },
+        error => {
+          console.error("Firestore snapshot error:", error);
+        }
+      );
+    } catch (err) {
+      console.error("Error initializing chat:", err);
+    }
+  };
+
+  initChat();
+
+  return () => {
+    if (unsubscribe) unsubscribe();
+  };
+}, [user, chatUser, chatId]);
+
 
   const checkFriendshipBeforeSend = async () => {
+    if (!user) return false;
     const docSnap = await getDoc(doc(db, 'users', user.uid));
     const data = docSnap.data();
     if (!data) return false;
