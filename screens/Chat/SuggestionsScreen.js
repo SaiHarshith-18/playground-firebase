@@ -14,8 +14,6 @@ import {
   doc,
   updateDoc,
   getDoc,
-  arrayUnion,
-  onSnapshot,
 } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 import { AuthContext } from "../../contexts/AuthContext";
@@ -32,8 +30,7 @@ export default function MessageScreen() {
   const [mySentRequests, setMySentRequests] = useState([]);
   const [myReceivedRequests, setMyReceivedRequests] = useState([]);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
+  const fetchUsers = async () => {
       const snapshot = await getDocs(collection(db, "users"));
       const allUsers = snapshot.docs
         .filter((doc) => doc.id !== user.uid)
@@ -48,6 +45,7 @@ export default function MessageScreen() {
       setMySentRequests(currentUserData.sentRequests || []);
       setMyReceivedRequests(currentUserData.receivedRequests || []);
     };
+  useEffect(() => {
     fetchUsers();
   }, [user]);
 
@@ -124,6 +122,7 @@ export default function MessageScreen() {
         (uid) => uid !== user.uid
       ),
     });
+    fetchUsers();
   };
 
   const handleCancelRequest = async (targetUser) => {
