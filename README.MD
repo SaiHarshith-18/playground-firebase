@@ -6,34 +6,31 @@ Playground is a social event and chat platform designed for students and communi
 
 ## Demo Screens
 
-### Home Screen
-<img src="assets/Home_screen.jpeg" alt="Home Screen" width="250"/>
-
-### Login Screen
-<img src="assets/login_Screen.jpeg" alt="Login Screen" width="250"/>
-
-### Profile Screen
-<img src="assets/profile_Screen.jpeg" alt="Profile Screen" width="250"/>
-
-### User Events Screen
-<img src="assets/user_events_Screen.jpeg" alt="User Events Screen" width="250"/>
-
-### Suggestions Screen
-<img src="assets/suggestion-screen.jpeg" alt="Suggestions Screen" width="250"/>
-
-### Message Screen
-<img src="assets/Message_screen.jpeg" alt="Message Screen" width="250"/>
+<table>
+  <tr>
+    <td align="center"><img src="assets/Home_screen.jpeg" alt="Home Screen" width="200"/><br/>Home Screen</td>
+    <td align="center"><img src="assets/login_Screen.jpeg" alt="Login Screen" width="200"/><br/>Login Screen</td>
+    <td align="center"><img src="assets/profile_Screen.jpeg" alt="Profile Screen" width="200"/><br/>Profile Screen</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/user_events_Screen.jpeg" alt="User Events" width="200"/><br/>User Events</td>
+    <td align="center"><img src="assets/suggestion-screen.jpeg" alt="Suggestions" width="200"/><br/>Suggestions</td>
+    <td align="center"><img src="assets/Chat_Screen.jpeg" alt="Chat Screen" width="200"/><br/>Message Screen</td>
+  </tr>
+</table>
 
 ---
 
 ## Features
 
 ### 1. **Authentication**
+
 - **Register & Login:** Secure sign up and login using email and password.
 - **Password Reset:** Users can reset their password via email.
 - **Profile Management:** Users can update their profile, avatar, and bio.
 
 ### 2. **Profile**
+
 - **User Info:** View and edit your profile, including name, avatar, and about section.
 - **Stats:** See your number of posts, friends (followers), and following (friends + sent requests).
 - **Media Preview:** Quick access to your uploaded photos and videos.
@@ -42,6 +39,7 @@ Playground is a social event and chat platform designed for students and communi
 - **Connect:** Navigate to the Suggestions screen to find and connect with new friends.
 
 ### 3. **Events**
+
 - **Create Event:** Organize new events with title, description, location (with picker), date, time, and game type.
 - **Edit/Delete Event:** Edit or delete events you created.
 - **Event Details:** View detailed information about any event, including attendees and description.
@@ -51,22 +49,26 @@ Playground is a social event and chat platform designed for students and communi
 - **Location Picker:** Select a location for your event using a map interface.
 
 ### 4. **Map**
+
 - **Home Screen Map:** See all nearby events on a map with interactive pins.
 - **Event Popup:** Tap a pin to see event details and navigate to the event page.
 
 ### 5. **Chat & Friends**
+
 - **Suggestions:** Discover new users to connect with, send/accept/cancel friend requests.
 - **Friends List:** See your connected friends and chat with them.
 - **Chat:** Real-time messaging with friends. Only friends can chat with each other.
 - **Search:** Search users by name to find and connect.
 
 ### 6. **Media**
+
 - **Upload Media:** Add photos and videos to your profile.
 - **All Media:** View all your uploaded media in a grid.
 - **Edit/Delete Media:** Edit captions or delete your media posts.
 - **Post Details:** View, edit, or delete individual media posts.
 
 ### 7. **Notifications**
+
 - **Notification Screen:** Placeholder for future notification features.
 - **Settings:** Access app settings, help, about, and logout.
 

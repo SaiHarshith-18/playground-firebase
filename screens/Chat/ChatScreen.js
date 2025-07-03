@@ -122,7 +122,7 @@ export default function ChatScreen({ route, navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#FF822B" />
         </TouchableOpacity>
-        <UserAvatar avatar={chatUser.avatar} style={styles.headerAvatar} />
+        <UserAvatar avatar={chatUser.avatar} style={styles.headerAvatar} size={36}/>
         <Text style={styles.headerTitle}>{chatUser.fullName || 'Chat User'}</Text>
       </View>
       <FlatList
