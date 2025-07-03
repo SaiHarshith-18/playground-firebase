@@ -19,6 +19,7 @@ export default function BottomTabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
+        swipeEnabled: false,
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
@@ -49,17 +50,11 @@ export default function BottomTabNavigator() {
             </View>
           ),
         }}
-        listeners={({ navigation }) => ({
-    tabPress: e => {
-      // Reset to main profile screen
-      navigation.navigate('Profile', { screen: 'ProfileMain' });
-    },
-  })}
       />
       {/* Custom Center Callout Button */}
       <Tab.Screen
         name="Callout"
-        component={HomeScreen} // You can replace with a custom callout screen if needed
+        component={HomeScreen}
         options={{
           tabBarButton: (props) => (
             <TouchableOpacity
@@ -77,7 +72,6 @@ export default function BottomTabNavigator() {
         }}
         listeners={{
           tabPress: (e) => {
-            // Prevent default navigation
             e.preventDefault();
           },
         }}
