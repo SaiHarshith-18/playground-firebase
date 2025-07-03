@@ -14,8 +14,6 @@ import {
   doc,
   updateDoc,
   getDoc,
-  arrayUnion,
-  onSnapshot
 } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -52,19 +50,17 @@ export default function MessageScreen() {
   }, [user]);
 
   useEffect(() => {
-  if (!search.trim()) {
-    setSearchResults([]);
-    return;
-  }
-  // Only search among connected users (friends)
-  const results = connectedUsers.filter(user =>
-    user.fullName &&
-    user.fullName.toLowerCase().includes(search.toLowerCase())
-  );
-  setSearchResults(results);
-}, [search, connectedUsers]);
+    if (!search.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const results = connectedUsers.filter(
+      user => user.fullName && user.fullName.toLowerCase().includes(search.toLowerCase())
+    );
+    setSearchResults(results);
+  }, [search, connectedUsers]);
 
-  const handleSendRequest = async (targetUser) => {
+  const handleSendRequest = async targetUser => {
     const userRef = doc(db, 'users', user.uid);
     const targetRef = doc(db, 'users', targetUser.uid);
 
@@ -78,19 +74,19 @@ export default function MessageScreen() {
 
     if (!sent.includes(targetUser.uid)) {
       await updateDoc(userRef, {
-        sentRequests: [...sent, targetUser.uid]
+        sentRequests: [...sent, targetUser.uid],
       });
       setMySentRequests(prev => [...prev, targetUser.uid]);
     }
 
     if (!received.includes(user.uid)) {
       await updateDoc(targetRef, {
-        receivedRequests: [...received, user.uid]
+        receivedRequests: [...received, user.uid],
       });
     }
   };
 
-  const handleAcceptRequest = async (targetUser) => {
+  const handleAcceptRequest = async targetUser => {
     const userRef = doc(db, 'users', user.uid);
     const targetRef = doc(db, 'users', targetUser.uid);
     const userSnap = await getDoc(userRef);
@@ -100,18 +96,18 @@ export default function MessageScreen() {
 
     await updateDoc(userRef, {
       friends: [...new Set([...(userData.friends || []), targetUser.uid])],
-      receivedRequests: (userData.receivedRequests || []).filter(uid => uid !== targetUser.uid)
+      receivedRequests: (userData.receivedRequests || []).filter(uid => uid !== targetUser.uid),
     });
     setConnectedUsers(prev => [...prev, targetUser]);
     setMyReceivedRequests(prev => prev.filter(uid => uid !== targetUser.uid));
 
     await updateDoc(targetRef, {
       friends: [...new Set([...(targetData.friends || []), user.uid])],
-      sentRequests: (targetData.sentRequests || []).filter(uid => uid !== user.uid)
+      sentRequests: (targetData.sentRequests || []).filter(uid => uid !== user.uid),
     });
   };
 
-  const handleCancelRequest = async (targetUser) => {
+  const handleCancelRequest = async targetUser => {
     const userRef = doc(db, 'users', user.uid);
     const targetRef = doc(db, 'users', targetUser.uid);
     const userSnap = await getDoc(userRef);
@@ -120,16 +116,16 @@ export default function MessageScreen() {
     const targetData = targetSnap.data();
 
     await updateDoc(userRef, {
-      sentRequests: (userData.sentRequests || []).filter(uid => uid !== targetUser.uid)
+      sentRequests: (userData.sentRequests || []).filter(uid => uid !== targetUser.uid),
     });
     setMySentRequests(prev => prev.filter(uid => uid !== targetUser.uid));
 
     await updateDoc(targetRef, {
-      receivedRequests: (targetData.receivedRequests || []).filter(uid => uid !== user.uid)
+      receivedRequests: (targetData.receivedRequests || []).filter(uid => uid !== user.uid),
     });
   };
 
-  const navigateToChat = (friend) => {
+  const navigateToChat = friend => {
     navigation.navigate('Chat', { recipient: friend });
   };
 
@@ -165,69 +161,65 @@ export default function MessageScreen() {
     );
   };
 
-return (
-  <SafeAreaView style={styles.container}>
-    <View style={{ paddingHorizontal: 16 }}>
-      <Text style={styles.title}>Messages</Text>
-      <TextInput
-        style={styles.searchInput}
-        value={search}
-        onChangeText={setSearch}
-        placeholder="Search by name..."
-        placeholderTextColor="#888"
-      />
-      {search.trim() ? (
-        <>
-          <Text style={styles.subHeading}>Search Results</Text>
-          {searchResults.length === 0 ? (
-            <View style={{ alignItems: 'center', marginTop: 40 }}>
-              <Text style={{ color: '#888', marginBottom: 16 }}>
-                No friends found.
-              </Text>
-              <TouchableOpacity
-                style={styles.connectBtn}
-                onPress={() => navigation.navigate('Suggestions')}
-              >
-                <Ionicons name="person-add" size={18} color="#fff" />
-                <Text style={styles.connectBtnText}>Connect with more people</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <FlatList
-              data={searchResults}
-              keyExtractor={item => item.uid}
-              renderItem={renderUserItem}
-            />
-          )}
-        </>
-      ) : (
-        <>
-          <Text style={styles.subHeading}>Your Friends</Text>
-          {connectedUsers.length === 0 ? (
-            <View style={{ alignItems: 'center', marginTop: 40 }}>
-              <Text style={{ color: '#888', marginBottom: 16 }}>
-                You have no friends yet.
-              </Text>
-              <TouchableOpacity
-                style={styles.connectBtn}
-                onPress={() => navigation.navigate('Suggestions')}
-              >
-                <Ionicons name="person-add" size={18} color="#fff" />
-                <Text style={styles.connectBtnText}>Connect with more people</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <FlatList
-              data={connectedUsers}
-              keyExtractor={item => item.uid}
-              renderItem={renderUserItem}
-            />
-          )}
-        </>
-      )}
-    </View>
-  </SafeAreaView>
-);
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={{ paddingHorizontal: 16 }}>
+        <Text style={styles.title}>Messages</Text>
+        <TextInput
+          style={styles.searchInput}
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Search by name..."
+          placeholderTextColor="#888"
+        />
+        {search.trim() ? (
+          <>
+            <Text style={styles.subHeading}>Search Results</Text>
+            {searchResults.length === 0 ? (
+              <View style={{ alignItems: 'center', marginTop: 40 }}>
+                <Text style={{ color: '#888', marginBottom: 16 }}>No friends found.</Text>
+                <TouchableOpacity
+                  style={styles.connectBtn}
+                  onPress={() => navigation.navigate('Suggestions')}
+                >
+                  <Ionicons name="person-add" size={18} color="#fff" />
+                  <Text style={styles.connectBtnText}>Connect with more people</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <FlatList
+                data={searchResults}
+                keyExtractor={item => item.uid}
+                renderItem={renderUserItem}
+              />
+            )}
+          </>
+        ) : (
+          <>
+            <Text style={styles.subHeading}>Your Friends</Text>
+            {connectedUsers.length === 0 ? (
+              <View style={{ alignItems: 'center', marginTop: 40 }}>
+                <Text style={{ color: '#888', marginBottom: 16 }}>You have no friends yet.</Text>
+                <TouchableOpacity
+                  style={styles.connectBtn}
+                  onPress={() => navigation.navigate('Suggestions')}
+                >
+                  <Ionicons name="person-add" size={18} color="#fff" />
+                  <Text style={styles.connectBtnText}>Connect with more people</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <FlatList
+                data={connectedUsers}
+                keyExtractor={item => item.uid}
+                renderItem={renderUserItem}
+              />
+            )}
+          </>
+        )}
+      </View>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -273,7 +265,7 @@ const styles = StyleSheet.create({
   acceptBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#4CAF50', // Green
+    backgroundColor: '#4CAF50',
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 14,
@@ -282,7 +274,7 @@ const styles = StyleSheet.create({
   cancelBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF3B30', // Red
+    backgroundColor: '#FF3B30',
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 14,

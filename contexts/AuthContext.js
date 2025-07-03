@@ -19,9 +19,5 @@ export const AuthProvider = ({ children }) => {
 
   if (loading) return null; // or a loading spinner
 
-  return (
-    <AuthContext.Provider value={{ user }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>;
 };

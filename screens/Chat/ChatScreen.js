@@ -1,10 +1,27 @@
 import React, { useContext, useEffect, useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, FlatList,
-  StyleSheet, KeyboardAvoidingView, Platform, SafeAreaView
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, getDoc, setDoc, doc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  addDoc,
+  serverTimestamp,
+  getDoc,
+  setDoc,
+  doc,
+} from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
 import UserAvatar from '../../utils/UserAvatar';
@@ -25,7 +42,7 @@ export default function ChatScreen({ route, navigation }) {
       { merge: true }
     ).then(() => {
       const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
+      const unsubscribe = onSnapshot(q, snapshot => {
         setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       });
       return unsubscribe;
@@ -47,29 +64,22 @@ export default function ChatScreen({ route, navigation }) {
       alert('You must connect before chatting.');
       return;
     }
-    await addDoc(
-      collection(db, 'chats', chatId, 'messages'),
-      {
-        text: inputText,
-        from: user.uid,
-        to: chatUser.uid,
-        createdAt: serverTimestamp(),
-      }
-    );
+    await addDoc(collection(db, 'chats', chatId, 'messages'), {
+      text: inputText,
+      from: user.uid,
+      to: chatUser.uid,
+      createdAt: serverTimestamp(),
+    });
     setInputText('');
   };
 
   const renderMessage = ({ item }) => {
     const isCurrentUser = item.from === user.uid;
     return (
-      <View style={[
-        styles.messageRow,
-        { justifyContent: isCurrentUser ? 'flex-end' : 'flex-start' }
-      ]}>
-        <View style={[
-          styles.bubble,
-          isCurrentUser ? styles.userBubble : styles.botBubble
-        ]}>
+      <View
+        style={[styles.messageRow, { justifyContent: isCurrentUser ? 'flex-end' : 'flex-start' }]}
+      >
+        <View style={[styles.bubble, isCurrentUser ? styles.userBubble : styles.botBubble]}>
           <Text style={styles.bubbleText}>{item.text}</Text>
         </View>
       </View>
@@ -95,9 +105,12 @@ export default function ChatScreen({ route, navigation }) {
       </View>
       <FlatList
         data={messages}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={renderMessage}
-        contentContainerStyle={[styles.chatArea, messages.length === 0 && { flex: 1, justifyContent: 'center' }]}
+        contentContainerStyle={[
+          styles.chatArea,
+          messages.length === 0 && { flex: 1, justifyContent: 'center' },
+        ]}
         ListEmptyComponent={() => (
           <Text style={{ textAlign: 'center', color: '#aaa' }}>Start a conversation...</Text>
         )}

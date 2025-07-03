@@ -14,9 +14,8 @@ export default function App() {
         <CalloutModalProvider>
           <NavigationContainer ref={navigationRef}>
             <AppStack />
-             <CalloutModal />
+            <CalloutModal />
           </NavigationContainer>
-         
         </CalloutModalProvider>
       </AuthProvider>
     </PaperProvider>

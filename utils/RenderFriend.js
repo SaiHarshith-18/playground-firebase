@@ -1,5 +1,5 @@
- import {useState} from "react";
- import {
+import { useState } from 'react';
+import {
   View,
   Text,
   FlatList,
@@ -9,17 +9,16 @@
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import UserAvatar from "./UserAvatar";
+import UserAvatar from './UserAvatar';
 
- 
- export const RenderFriend = ({
-    item,
-    user,
-    linkedUsers,
-    onAddFriend,
-    onAcceptRequest,
-    onMessage
-  }) => {
+export const RenderFriend = ({
+  item,
+  user,
+  linkedUsers,
+  onAddFriend,
+  onAcceptRequest,
+  onMessage,
+}) => {
   const [imageError, setImageError] = useState(false);
   const currentUserId = user?.uid;
   const isFriend = linkedUsers.includes(item.id);
@@ -53,10 +52,7 @@ import UserAvatar from "./UserAvatar";
     );
   } else {
     actionButton = (
-      <TouchableOpacity
-        style={styles.friendAddButton}
-        onPress={() => onAddFriend(item.id)}
-      >
+      <TouchableOpacity style={styles.friendAddButton} onPress={() => onAddFriend(item.id)}>
         <Text style={styles.addButtonText}>Add</Text>
       </TouchableOpacity>
     );
@@ -64,7 +60,7 @@ import UserAvatar from "./UserAvatar";
 
   return (
     <View style={styles.friendCard}>
-      <UserAvatar avatar={item.avatar} style={styles.friendAvatar}  />
+      <UserAvatar avatar={item.avatar} style={styles.friendAvatar} />
       <View style={styles.friendInfo}>
         <Text style={styles.friendName}>{item.fullName || 'Unnamed'}</Text>
         <Text style={styles.friendAbout}>{item.about || 'No bio available'}</Text>
@@ -111,4 +107,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-})
+});

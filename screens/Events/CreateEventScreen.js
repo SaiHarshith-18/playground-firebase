@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect } from 'react';
 import {
   View,
   TextInput,
@@ -9,32 +9,25 @@ import {
   Text,
   TouchableOpacity,
   Platform,
-} from "react-native";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
-import {
-  addDoc,
-  collection,
-  serverTimestamp,
-  updateDoc,
-  doc,
-  getDoc,
-} from "firebase/firestore";
-import { db } from "../../firebaseConfig";
-import { AuthContext } from "../../contexts/AuthContext";
-import { Ionicons } from "@expo/vector-icons";
-import { Menu } from "react-native-paper";
+} from 'react-native';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { addDoc, collection, serverTimestamp, updateDoc, doc, getDoc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { AuthContext } from '../../contexts/AuthContext';
+import { Ionicons } from '@expo/vector-icons';
+import { Menu } from 'react-native-paper';
 
 export default function CreateEventScreen({ navigation, route }) {
   const { user } = useContext(AuthContext);
   const editingEvent = route?.params?.event;
   const isEdit = route?.params?.isEdit;
 
-  const [title, setTitle] = useState("");
-  const [gameType, setGameType] = useState("");
+  const [title, setTitle] = useState('');
+  const [gameType, setGameType] = useState('');
   const [location, setLocation] = useState(null);
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const [description, setDescription] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
   const [pickerMode, setPickerMode] = useState(null); // 'date' or 'time'
   const [isPickerVisible, setPickerVisible] = useState(false);
   const [gameTypeMenuVisible, setGameTypeMenuVisible] = useState(false);
@@ -54,38 +47,38 @@ export default function CreateEventScreen({ navigation, route }) {
 
   useEffect(() => {
     if (editingEvent) {
-      setTitle(editingEvent.title || "");
+      setTitle(editingEvent.title || '');
       setLocation(editingEvent.location || null);
-      setDescription(editingEvent.description || "");
-      setDate(editingEvent.date || "");
-      setTime(editingEvent.time || "");
-      setGameType(editingEvent.gameType || "");
+      setDescription(editingEvent.description || '');
+      setDate(editingEvent.date || '');
+      setTime(editingEvent.time || '');
+      setGameType(editingEvent.gameType || '');
     }
   }, [editingEvent]);
 
   const gameTypeOptions = [
-    "Football",
-    "BasketBall",
-    "Baseball",
-    "Ice Hockey",
-    "Soccer",
-    "Tennis",
-    "Golf",
-    "Auto Racing",
-    "Wresting",
-    "Lacrosse",
-    "Other",
+    'Football',
+    'BasketBall',
+    'Baseball',
+    'Ice Hockey',
+    'Soccer',
+    'Tennis',
+    'Golf',
+    'Auto Racing',
+    'Wresting',
+    'Lacrosse',
+    'Other',
   ];
 
   const openLocationPicker = () => {
-    navigation.navigate("LocationPicker", {
-      onLocationSelected: (location) => {
+    navigation.navigate('LocationPicker', {
+      onLocationSelected: location => {
         setLocation(location);
       },
     });
   };
 
-  const showPicker = (mode) => {
+  const showPicker = mode => {
     setPickerMode(mode);
     setPickerVisible(true);
   };
@@ -94,22 +87,16 @@ export default function CreateEventScreen({ navigation, route }) {
     setPickerVisible(false);
   };
 
-  const handleConfirm = (selected) => {
-    if (pickerMode === "date") {
-      const formatted = selected
-        .toLocaleDateString("en-GB")
-        .split("/")
-        .reverse()
-        .join("-");
+  const handleConfirm = selected => {
+    if (pickerMode === 'date') {
+      const formatted = selected.toLocaleDateString('en-GB').split('/').reverse().join('-');
       setDate(formatted);
-    } else if (pickerMode === "time") {
+    } else if (pickerMode === 'time') {
       const hours = selected.getHours();
       const minutes = selected.getMinutes();
-      const ampm = hours >= 12 ? "PM" : "AM";
+      const ampm = hours >= 12 ? 'PM' : 'AM';
       const hour12 = hours % 12 || 12;
-      const formatted = `${hour12}:${minutes
-        .toString()
-        .padStart(2, "0")} ${ampm}`;
+      const formatted = `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
       setTime(formatted);
     }
     hidePicker();
@@ -117,12 +104,12 @@ export default function CreateEventScreen({ navigation, route }) {
 
   const handleSubmit = async () => {
     if (!title || !location || !description || !date || !time) {
-      Alert.alert("Validation", "Please fill in all fields");
+      Alert.alert('Validation', 'Please fill in all fields');
       return;
     }
     try {
       if (isEdit && editingEvent?.id) {
-        await updateDoc(doc(db, "events", editingEvent.id), {
+        await updateDoc(doc(db, 'events', editingEvent.id), {
           title,
           location,
           description,
@@ -130,12 +117,11 @@ export default function CreateEventScreen({ navigation, route }) {
           time,
           gameType,
         });
-        // Fetch the updated event from Firestore
-        const updatedSnap = await getDoc(doc(db, "events", editingEvent.id));
+        const updatedSnap = await getDoc(doc(db, 'events', editingEvent.id));
         const updatedEvent = { id: editingEvent.id, ...updatedSnap.data() };
-        Alert.alert("Success", "Event updated!");
+        Alert.alert('Success', 'Event updated!');
       } else {
-        await addDoc(collection(db, "events"), {
+        await addDoc(collection(db, 'events'), {
           title,
           location,
           description,
@@ -148,14 +134,14 @@ export default function CreateEventScreen({ navigation, route }) {
           createdAt: serverTimestamp(),
           isChallenging: route?.params?.isChallenge || false,
         });
-        Alert.alert("Success", "Event Created!");
+        Alert.alert('Success', 'Event Created!');
       }
       navigation.reset({
         index: 0,
-        routes: [{ name: "MainApp", params: { screen: "AllUserEvents" } }],
+        routes: [{ name: 'MainApp', params: { screen: 'AllUserEvents' } }],
       });
     } catch (error) {
-      Alert.alert("Error", "Failed to save event");
+      Alert.alert('Error', 'Failed to save event');
     }
   };
 
@@ -176,22 +162,22 @@ export default function CreateEventScreen({ navigation, route }) {
               style={[
                 styles.input,
                 {
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
                 },
               ]}
               onPress={() => setGameTypeMenuVisible(true)}
             >
-              <Text style={{ color: gameType ? "#111" : "#aaa" }}>
-                {gameType || "Select Game Type"}
+              <Text style={{ color: gameType ? '#111' : '#aaa' }}>
+                {gameType || 'Select Game Type'}
               </Text>
               <Ionicons name="chevron-down" size={18} color="#888" />
             </TouchableOpacity>
           }
-          contentStyle={{ backgroundColor: "#fff" }}
+          contentStyle={{ backgroundColor: '#fff' }}
         >
-          {gameTypeOptions.map((option) => (
+          {gameTypeOptions.map(option => (
             <Menu.Item
               key={option}
               onPress={() => {
@@ -202,16 +188,12 @@ export default function CreateEventScreen({ navigation, route }) {
             />
           ))}
         </Menu>
-        <TouchableOpacity
-          onPress={openLocationPicker}
-          style={styles.locationInput}
-        >
+        <TouchableOpacity onPress={openLocationPicker} style={styles.locationInput}>
           <Ionicons name="location-outline" size={20} color="#FF822B" />
           <Text style={styles.locationText}>
             {location
-              ? location.name ||
-                `Lat: ${location.latitude}, Lng: ${location.longitude}`
-              : "Choose Location"}
+              ? location.name || `Lat: ${location.latitude}, Lng: ${location.longitude}`
+              : 'Choose Location'}
           </Text>
         </TouchableOpacity>
         <TextInput
@@ -220,17 +202,11 @@ export default function CreateEventScreen({ navigation, route }) {
           onChangeText={setDescription}
           style={styles.input}
         />
-        <TouchableOpacity
-          onPress={() => showPicker("date")}
-          style={styles.input}
-        >
-          <Text>{date ? date : "Select Date (DD-MM-YYYY)"}</Text>
+        <TouchableOpacity onPress={() => showPicker('date')} style={styles.input}>
+          <Text>{date ? date : 'Select Date (DD-MM-YYYY)'}</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => showPicker("time")}
-          style={styles.input}
-        >
-          <Text>{time ? time : "Select Time (e.g. 6:30 PM)"}</Text>
+        <TouchableOpacity onPress={() => showPicker('time')} style={styles.input}>
+          <Text>{time ? time : 'Select Time (e.g. 6:30 PM)'}</Text>
         </TouchableOpacity>
         <DateTimePickerModal
           isVisible={isPickerVisible}
@@ -242,10 +218,7 @@ export default function CreateEventScreen({ navigation, route }) {
           themeVariant="light"
           textColor="#000"
         />
-        <Button
-          title={isEdit ? "Update Event" : "Create Event"}
-          onPress={handleSubmit}
-        />
+        <Button title={isEdit ? 'Update Event' : 'Create Event'} onPress={handleSubmit} />
       </View>
     </SafeAreaView>
   );
@@ -254,7 +227,7 @@ export default function CreateEventScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   container: {
     padding: 16,
@@ -263,21 +236,21 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     padding: 10,
     borderRadius: 8,
   },
   locationInput: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 12,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderRadius: 8,
     marginBottom: 12,
   },
   locationText: {
     marginLeft: 10,
-    color: "#333",
+    color: '#333',
   },
 });

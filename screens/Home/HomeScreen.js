@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,13 +8,13 @@ import {
   Text,
   Animated,
   Easing,
-  Dimensions
-} from "react-native";
-import MapView, { Marker, AnimatedRegion } from "react-native-maps";
-import * as Location from "expo-location";
-import { Ionicons, Feather } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
-import RedPin from "../../assets/location_pin.png";
+  Dimensions,
+} from 'react-native';
+import MapView, { Marker, AnimatedRegion } from 'react-native-maps';
+import * as Location from 'expo-location';
+import { Ionicons, Feather } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import RedPin from '../../assets/location_pin.png';
 import {
   doc,
   updateDoc,
@@ -23,11 +23,11 @@ import {
   collection,
   serverTimestamp,
   getDocs,
-} from "firebase/firestore";
-import { db } from "../../firebaseConfig";
-import { AuthContext } from "../../contexts/AuthContext";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { useCallback } from "react";
+} from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { AuthContext } from '../../contexts/AuthContext';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 export default function HomeScreen() {
   const mapRef = useRef(null);
@@ -50,8 +50,8 @@ export default function HomeScreen() {
         setPopupVisible(true);
 
         let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          console.log("Permission to access location was denied");
+        if (status !== 'granted') {
+          console.log('Permission to access location was denied');
           setLoading(false);
           return;
         }
@@ -63,7 +63,7 @@ export default function HomeScreen() {
         });
 
         if (user?.uid) {
-          const userRef = doc(db, "users", user.uid);
+          const userRef = doc(db, 'users', user.uid);
           const userSnap = await getDoc(userRef);
           if (userSnap.exists() && userSnap.data().avatar) {
             setProfileImage(userSnap.data().avatar);
@@ -78,23 +78,23 @@ export default function HomeScreen() {
   );
 
   useEffect(() => {
-  if (!mapRef.current || !currentEvent?.location) return;
+    if (!mapRef.current || !currentEvent?.location) return;
 
-  mapRef.current.animateToRegion(
-    {
-      latitude: currentEvent.location.latitude,
-      longitude: currentEvent.location.longitude,
-      latitudeDelta: 0.05,
-      longitudeDelta: 0.05,
-    },
-    1000 // duration in ms
-  );
-}, [currentEvent]);
+    mapRef.current.animateToRegion(
+      {
+        latitude: currentEvent.location.latitude,
+        longitude: currentEvent.location.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      },
+      1000
+    );
+  }, [currentEvent]);
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const snapshot = await getDocs(collection(db, "events"));
-      setEvents(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      const snapshot = await getDocs(collection(db, 'events'));
+      setEvents(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     };
     fetchEvents();
   }, []);
@@ -104,7 +104,7 @@ export default function HomeScreen() {
     const interval = setInterval(() => {
       setPopupVisible(false);
       setTimeout(() => {
-        setCurrentEventIndex((prev) => (prev + 1) % events.length);
+        setCurrentEventIndex(prev => (prev + 1) % events.length);
         setPopupVisible(true);
         fadeAnim.setValue(0);
         Animated.timing(fadeAnim, {
@@ -135,7 +135,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <MapView
         ref={mapRef}
         style={styles.map}
@@ -148,22 +148,14 @@ export default function HomeScreen() {
         showsUserLocation
       >
         {events.map((event, idx) => (
-          <Marker
-            key={event.id}
-            coordinate={event.location}
-            tracksViewChanges={false}
-          >
-            <View
-              style={
-                 idx === currentEventIndex ? styles.bigMarker : styles.smallMarker
-              }
-            >
+          <Marker key={event.id} coordinate={event.location} tracksViewChanges={false}>
+            <View style={idx === currentEventIndex ? styles.bigMarker : styles.smallMarker}>
               <Image
                 source={RedPin}
                 style={{
-                  width: currentEventIndex ? idx === currentEventIndex ? 70 : 20 : 40,
-                  height: currentEventIndex ? idx === currentEventIndex ? 70 : 20 : 40,
-                  resizeMode: "contain",
+                  width: currentEventIndex ? (idx === currentEventIndex ? 70 : 20) : 40,
+                  height: currentEventIndex ? (idx === currentEventIndex ? 70 : 20) : 40,
+                  resizeMode: 'contain',
                 }}
               />
             </View>
@@ -174,33 +166,35 @@ export default function HomeScreen() {
       {popupVisible && currentEvent && (
         <Animated.View
           style={{
-            position: "absolute",
+            position: 'absolute',
             top: 250,
             left: 0,
             right: 0,
-            alignItems: "center",
+            alignItems: 'center',
             opacity: fadeAnim,
             zIndex: 999,
           }}
         >
           <TouchableOpacity
-            onPress={() => navigation.navigate("EventDetails", { event: currentEvent })}
+            onPress={() => navigation.navigate('EventDetails', { event: currentEvent })}
             style={{
-              backgroundColor: "white",
+              backgroundColor: 'white',
               borderRadius: 12,
               padding: 10,
               width: 240,
-              shadowColor: "#000",
+              shadowColor: '#000',
               shadowOpacity: 0.2,
               shadowOffset: { width: 0, height: 3 },
               elevation: 5,
             }}
           >
-            <Text style={{ fontWeight: "bold", color: "#FF822B", fontSize: 17, textAlign: "center" }}>
+            <Text
+              style={{ fontWeight: 'bold', color: '#FF822B', fontSize: 17, textAlign: 'center' }}
+            >
               {currentEvent.title}
             </Text>
-            <Text style={{ fontSize: 13, color: "#444", textAlign: "center" }}>
-              {currentEvent.location?.name || "Near you"}
+            <Text style={{ fontSize: 13, color: '#444', textAlign: 'center' }}>
+              {currentEvent.location?.name || 'Near you'}
             </Text>
           </TouchableOpacity>
         </Animated.View>
@@ -209,7 +203,7 @@ export default function HomeScreen() {
       <View style={styles.topRightContainer}>
         <TouchableOpacity
           style={styles.profileContainer}
-          onPress={() => navigation.navigate("Profile")}
+          onPress={() => navigation.navigate('Profile')}
           activeOpacity={0.7}
         >
           <View style={styles.profileImageContainer}>
@@ -223,7 +217,7 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           style={styles.plusButton}
-          onPress={() => navigation.navigate("CreateEvent")}
+          onPress={() => navigation.navigate('CreateEvent')}
         >
           <Feather name="plus" size={38} color="orange" />
         </TouchableOpacity>
@@ -237,30 +231,30 @@ const styles = StyleSheet.create({
   map: { flex: 1 },
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bigMarker: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(255, 59, 48, 0.15)",
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 59, 48, 0.15)',
     borderRadius: 40,
     padding: 2,
   },
   smallMarker: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(200,200,200,0.10)",
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(200,200,200,0.10)',
     borderRadius: 16,
     padding: 1,
   },
   profileContainer: {
-    position: "relative",
+    position: 'relative',
     marginBottom: 20,
-    alignItems: "center",
+    alignItems: 'center',
   },
   profileImageContainer: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderRadius: 50,
     padding: 2,
   },
@@ -270,26 +264,26 @@ const styles = StyleSheet.create({
     borderRadius: 40,
   },
   plusButton: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     padding: 6,
     borderRadius: 30,
-    borderColor: "grey",
+    borderColor: 'grey',
     borderWidth: 1,
     elevation: 5,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     marginBottom: 15,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   topRightContainer: {
-    position: "absolute",
+    position: 'absolute',
     top: 60,
     right: 30,
-    flexDirection: "row-reverse",
+    flexDirection: 'row-reverse',
     gap: 13,
-    alignItems: "center",
+    alignItems: 'center',
   },
 });

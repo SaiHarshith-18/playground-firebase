@@ -7,13 +7,9 @@ export default function UserAvatar({ avatar, size = 90, style = {} }) {
 
   return (
     <View
-      style={[
-        styles.avatarWrapper,
-        { width: size, height: size, borderRadius: size / 2 },
-        style,
-      ]}
+      style={[styles.avatarWrapper, { width: size, height: size, borderRadius: size / 2 }, style]}
     >
-      {avatar && !imgError && avatar.trim() !== "" ? (
+      {avatar && !imgError && avatar.trim() !== '' ? (
         <Image
           source={{ uri: avatar }}
           style={{
@@ -36,11 +32,7 @@ export default function UserAvatar({ avatar, size = 90, style = {} }) {
             backgroundColor: '#f3f3f3',
           }}
         >
-          <Ionicons
-            name="person-circle-outline"
-            size={size * 0.85}
-            color="#ccc"
-          />
+          <Ionicons name="person-circle-outline" size={size * 0.85} color="#ccc" />
         </View>
       )}
     </View>

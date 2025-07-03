@@ -21,9 +21,9 @@ export default function PostDetailScreen({ route, navigation }) {
         await setDoc(userRef, { media: filteredMedia }, { merge: true });
       }
       navigation.goBack();
-      Alert.alert("Post Deleted", "Your media post was successfully removed.");
+      Alert.alert('Post Deleted', 'Your media post was successfully removed.');
     } catch (error) {
-      Alert.alert("Delete Failed", error.message);
+      Alert.alert('Delete Failed', error.message);
     }
   };
 
@@ -42,14 +42,19 @@ export default function PostDetailScreen({ route, navigation }) {
       });
       if (!result.canceled) {
         const newUri = result.assets[0].uri;
-        Alert.prompt("Edit caption", "Update your caption:", async (newCaption) => {
+        Alert.prompt('Edit caption', 'Update your caption:', async newCaption => {
           const userRef = doc(db, 'users', user.uid);
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
             const data = userSnap.data();
             const updatedMedia = (data.media || []).map(item =>
               item.id === post.id
-                ? { ...item, url: newUri, caption: newCaption || item.caption, updatedAt: Date.now() }
+                ? {
+                    ...item,
+                    url: newUri,
+                    caption: newCaption || item.caption,
+                    updatedAt: Date.now(),
+                  }
                 : item
             );
             await updateDoc(userRef, { media: updatedMedia });
@@ -58,7 +63,7 @@ export default function PostDetailScreen({ route, navigation }) {
         });
       }
     } catch (error) {
-      Alert.alert("Edit Failed", error.message);
+      Alert.alert('Edit Failed', error.message);
     }
   };
 

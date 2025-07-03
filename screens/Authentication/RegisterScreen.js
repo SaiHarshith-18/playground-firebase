@@ -16,9 +16,9 @@ import { doc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig';
 
 export default function RegisterScreen({ navigation }) {
-  const [email, setEmail]     = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName]       = useState('');
+  const [name, setName] = useState('');
 
   const handleRegister = async () => {
     try {
@@ -40,7 +40,10 @@ export default function RegisterScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <Text style={styles.title}>Create Account</Text>
@@ -75,7 +78,9 @@ export default function RegisterScreen({ navigation }) {
             <Text style={styles.buttonText}>Sign Up</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.link}>Have an account? <Text style={{ color: '#D44A16', fontWeight: '600' }}>Log In</Text></Text>
+            <Text style={styles.link}>
+              Have an account? <Text style={{ color: '#D44A16', fontWeight: '600' }}>Log In</Text>
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

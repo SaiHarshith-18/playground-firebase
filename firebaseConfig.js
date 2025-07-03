@@ -1,11 +1,6 @@
-
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import {
-  initializeAuth,
-  getAuth,
-  getReactNativePersistence
-} from 'firebase/auth';
+import { initializeAuth, getAuth, getReactNativePersistence } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // import {
 //   FIREBASE_API_KEY,
@@ -26,12 +21,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // };
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBUdWNjWD90RW9PxpQAhZgo-tlQfWbGxdA",
-  authDomain: "playground-app-792c2.firebaseapp.com",
-  projectId: "playground-app-792c2",
-  storageBucket: "playground-app-792c2.firebasestorage.app",
-  messagingSenderId: "899534344073",
-  appId: "1:899534344073:web:ad5ebfa764ce035ebb9b58"
+  apiKey: 'AIzaSyBUdWNjWD90RW9PxpQAhZgo-tlQfWbGxdA',
+  authDomain: 'playground-app-792c2.firebaseapp.com',
+  projectId: 'playground-app-792c2',
+  storageBucket: 'playground-app-792c2.firebasestorage.app',
+  messagingSenderId: '899534344073',
+  appId: '1:899534344073:web:ad5ebfa764ce035ebb9b58',
 };
 
 // 1) only initialize the App once
@@ -41,7 +36,7 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 let auth;
 try {
   auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage)
+    persistence: getReactNativePersistence(AsyncStorage),
   });
 } catch (e) {
   // already initialized

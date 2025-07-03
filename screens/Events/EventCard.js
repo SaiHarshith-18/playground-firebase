@@ -7,7 +7,7 @@ export function parseEventDateTime(dateStr, timeStr) {
   if (!dateStr || !timeStr) return new Date('invalid');
   const [year, month, day] = dateStr.trim().split('-');
   const cleanTime = timeStr.trim().toUpperCase();
-  const convertTo24Hr = (time12h) => {
+  const convertTo24Hr = time12h => {
     const [time, modifier] = time12h.split(' ');
     let [hours, minutes] = time.split(':').map(Number);
     if (modifier === 'PM' && hours < 12) hours += 12;

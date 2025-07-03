@@ -10,12 +10,10 @@ import MessageScreen from '../screens/Chat/MessageScreen';
 import SettingScreen from '../screens/Notifications/SettingScreen';
 import { useCalloutModal } from '../contexts/callOutModalContext';
 
-
 const Tab = createBottomTabNavigator();
 
 export default function BottomTabNavigator() {
-
-  const {openCallout} = useCalloutModal();
+  const { openCallout } = useCalloutModal();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -24,7 +22,7 @@ export default function BottomTabNavigator() {
         tabBarShowLabel: false,
         tabBarStyle: {
           paddingTop: Platform.OS === 'ios' ? 10 : 0,
-        }
+        },
       }}
     >
       <Tab.Screen
@@ -56,22 +54,19 @@ export default function BottomTabNavigator() {
         name="Callout"
         component={HomeScreen}
         options={{
-          tabBarButton: (props) => (
+          tabBarButton: props => (
             <TouchableOpacity
               {...props}
               onPress={openCallout}
               activeOpacity={0.8}
               style={styles.calloutButton}
             >
-              <Image
-                source={require('../assets/callout.png')}
-                style={styles.calloutButton}
-              />
+              <Image source={require('../assets/callout.png')} style={styles.calloutButton} />
             </TouchableOpacity>
           ),
         }}
         listeners={{
-          tabPress: (e) => {
+          tabPress: e => {
             e.preventDefault();
           },
         }}
@@ -82,7 +77,11 @@ export default function BottomTabNavigator() {
         options={{
           tabBarIcon: ({ focused }) => (
             <View style={styles.iconContainer}>
-              <Ionicons name="chatbubble-ellipses-outline" size={30} color={focused ? 'orange' : 'gray'} />
+              <Ionicons
+                name="chatbubble-ellipses-outline"
+                size={30}
+                color={focused ? 'orange' : 'gray'}
+              />
               {focused && <View style={styles.bottomLine} />}
             </View>
           ),
@@ -127,6 +126,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 8,
-    left: -5
+    left: -5,
   },
 });

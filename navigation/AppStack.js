@@ -1,22 +1,22 @@
 // App.js
-import React, { useContext } from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React, { useContext } from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { AuthProvider, AuthContext } from "../contexts/AuthContext";
-import LoginScreen from "../screens/Authentication/LoginScreen";
-import RegisterScreen from "../screens/Authentication/RegisterScreen";
-import PostDetailScreen from "../screens/Media/PostDetailScreen";
-import SuggestionsScreen from "../screens/Chat/SuggestionsScreen";
-import BottomTabNavigator from "./BottomTabNavigator";
-import ChatScreen from "../screens/Chat/ChatScreen";
-import AllMediaScreen from "../screens/Media/AllMediaScreen";
-import CreateEventScreen from "../screens/Events/CreateEventScreen";
-import LocationPicker from "../screens/Events/LocationPicker";
-import UserEventList from "../screens/Events/UserEventList";
-import Notification from "../screens/Notifications/NotificationScreen";
-import EventDetails from "../screens/Events/EventDetails";
-import CallOutModal from "../screens/Events/CalloutModal";
-import SelectUser from "../screens/Events/SelectUserScreen";
+import { AuthProvider, AuthContext } from '../contexts/AuthContext';
+import LoginScreen from '../screens/Authentication/LoginScreen';
+import RegisterScreen from '../screens/Authentication/RegisterScreen';
+import PostDetailScreen from '../screens/Media/PostDetailScreen';
+import SuggestionsScreen from '../screens/Chat/SuggestionsScreen';
+import BottomTabNavigator from './BottomTabNavigator';
+import ChatScreen from '../screens/Chat/ChatScreen';
+import AllMediaScreen from '../screens/Media/AllMediaScreen';
+import CreateEventScreen from '../screens/Events/CreateEventScreen';
+import LocationPicker from '../screens/Events/LocationPicker';
+import UserEventList from '../screens/Events/UserEventList';
+import Notification from '../screens/Notifications/NotificationScreen';
+import EventDetails from '../screens/Events/EventDetails';
+import CallOutModal from '../screens/Events/CalloutModal';
+import SelectUser from '../screens/Events/SelectUserScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,7 +36,7 @@ export default function AppNav() {
           <Stack.Screen
             name="EventDetails"
             component={EventDetails}
-            options={{ title: "Event Details" }}
+            options={{ title: 'Event Details' }}
           />
           <Stack.Screen name="AllMedia" component={AllMediaScreen} />
           <Stack.Screen name="PostDetail" component={PostDetailScreen} />
@@ -45,7 +45,7 @@ export default function AppNav() {
             component={LocationPicker}
             options={{
               gestureEnabled: false, // disables swipe back
-              headerShown: false, // if you use a custom header
+              headerShown: false,
             }}
           />
           <Stack.Screen name="Chat" component={ChatScreen} />
