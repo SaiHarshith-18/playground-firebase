@@ -202,8 +202,10 @@ export default function ProfileScreen() {
 
   const fullName = formData.fullName || "User";
   const avatar = profileData?.avatar;
-  const followers = profileData?.followers ?? 0;
-  const following = profileData?.following ?? 0;
+   const friends = profileData?.friends ?? [];
+  const sentRequests = profileData?.sentRequests ?? [];
+  const followers = friends.length;
+  const following = friends.length + sentRequests.length;
   const about = formData.about || "";
   const posts = media.filter((item) => item.id !== "add").length;
   const mediaWithoutAdd = media.filter((item) => item.id !== "add");
