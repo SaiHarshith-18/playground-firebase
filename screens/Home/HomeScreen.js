@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+
+import React, { useEffect, useState, useContext, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,26 +9,25 @@ import {
   Text,
   Animated,
   Easing,
-  Dimensions,
 } from 'react-native';
-import MapView, { Marker, AnimatedRegion } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import RedPin from '../../assets/location_pin.png';
 import {
   doc,
-  updateDoc,
   getDoc,
-  addDoc,
   collection,
-  serverTimestamp,
   getDocs,
 } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { useCallback } from 'react';
+
+// ICON SIZE CONSTANTS
+const PROFILE_ICON_SIZE = 75;
+const PLUS_ICON_SIZE = PROFILE_ICON_SIZE * 0.5;
 
 export default function HomeScreen() {
   const mapRef = useRef(null);
@@ -210,7 +210,7 @@ export default function HomeScreen() {
             {profileImage ? (
               <Image source={{ uri: profileImage }} style={styles.profileImage} />
             ) : (
-              <Ionicons name="person-circle-outline" size={48} color="grey" />
+              <Ionicons name="person-circle-outline" size={PROFILE_ICON_SIZE} color="grey" />
             )}
           </View>
         </TouchableOpacity>
@@ -219,7 +219,7 @@ export default function HomeScreen() {
           style={styles.plusButton}
           onPress={() => navigation.navigate('CreateEvent')}
         >
-          <Feather name="plus" size={38} color="orange" />
+          <Feather name="plus" size={PLUS_ICON_SIZE} color="orange" />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -249,24 +249,23 @@ const styles = StyleSheet.create({
     padding: 1,
   },
   profileContainer: {
-    position: 'relative',
-    marginBottom: 20,
+    marginBottom: 10,
     alignItems: 'center',
   },
   profileImageContainer: {
     backgroundColor: 'white',
-    borderRadius: 50,
+    borderRadius: PROFILE_ICON_SIZE,
     padding: 2,
   },
   profileImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 40,
+    width: PROFILE_ICON_SIZE,
+    height: PROFILE_ICON_SIZE,
+    borderRadius: PROFILE_ICON_SIZE / 2,
   },
   plusButton: {
     backgroundColor: 'white',
     padding: 6,
-    borderRadius: 30,
+    borderRadius: PLUS_ICON_SIZE / 2 + 6,
     borderColor: 'grey',
     borderWidth: 1,
     elevation: 5,
@@ -274,7 +273,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    marginBottom: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -282,8 +280,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 60,
     right: 30,
-    flexDirection: 'row-reverse',
-    gap: 13,
+    flexDirection: 'column',
     alignItems: 'center',
   },
 });
