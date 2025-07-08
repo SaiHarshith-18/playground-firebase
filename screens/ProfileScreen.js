@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   container: { backgroundColor: '#ffffff', flex: 1 },
   coverContainer: {
     alignItems: 'center',
-    height: 280,
+    height: 400,
     justifyContent: 'center',
     overflow: 'hidden',
     width: '100%',
