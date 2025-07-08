@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useContext } from 'react';
+/* eslint-disable react-native/no-color-literals */
+import React, { useState, useContext } from 'react';
 import {
-  Dimensions,
   View,
   Text,
   StyleSheet,
@@ -16,7 +16,7 @@ import { Menu } from 'react-native-paper';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { db, auth } from '../firebaseConfig';
+import { db } from '../firebaseConfig';
 import { AuthContext } from '../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import TodayUserEvents from './Events/TodayUserEvents';
@@ -32,7 +32,6 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [media, setMedia] = useState([{ id: 'add' }]);
   const [menuVisible, setMenuVisible] = useState(false);
-  const [imgError, setImgError] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -201,7 +200,12 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.inner}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.inner}
+        bounces={false}
+        overScrollMode="never"
+      >
         <View>
           <View style={styles.editIcons}>
             {editMode && (
@@ -266,7 +270,14 @@ export default function ProfileScreen() {
                 </>
               ) : (
                 <>
-                  <Text style={styles.name}>{fullName}</Text>
+                  <View style={styles.nameRow}>
+                    <Text style={styles.name}>{fullName}</Text>
+                    {!editMode && (
+                      <TouchableOpacity onPress={() => setEditMode(true)} style={styles.editIcon}>
+                        <Feather name="edit-3" size={18} color="#FF822B" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
                   <Text style={styles.aboutText}>{about || 'No bio added yet.'}</Text>
                 </>
               )}
@@ -280,6 +291,14 @@ export default function ProfileScreen() {
                 { label: 'Posts', value: posts },
                 { label: 'Followers', value: followers },
                 { label: 'Following', value: following },
+                {
+                  label: 'Suggestions',
+                  value: (
+                    <TouchableOpacity onPress={() => navigation.navigate('Suggestions')}>
+                      <Ionicons name="people-outline" size={20} color="#FF822B" />
+                    </TouchableOpacity>
+                  ),
+                },
               ].map(stat => (
                 <View key={stat.label} style={styles.statBox}>
                   <Text style={styles.statNumber}>{stat.value}</Text>
@@ -288,19 +307,9 @@ export default function ProfileScreen() {
               ))}
             </View>
           </View>
-          {!editMode && (
-            <View style={styles.profileActions}>
-              <TouchableOpacity style={styles.editProfileBtn} onPress={() => setEditMode(true)}>
-                <Text style={styles.editProfileText}>Edit Profile</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.navigate('Suggestions')}>
-                <Ionicons name="people-outline" size={26} color="#FF822B" />
-              </TouchableOpacity>
-            </View>
-          )}
 
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Photos and Videos</Text>
+            <Text style={styles.sectionTitle}>Activity Media</Text>
             <TouchableOpacity onPress={() => navigation.navigate('AllMedia')}>
               <Text style={styles.seeAllText}>See all</Text>
             </TouchableOpacity>
@@ -347,39 +356,18 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  aboutText: { color: '#666', fontSize: 14, marginTop: 6, textAlign: 'center' },
-  avatarCircle: {
-    position: 'absolute',
-    top: 200, // adjust based on cover height
-    alignSelf: 'center',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 4,
-    borderColor: '#fff',
-    backgroundColor: '#fff',
-    overflow: 'hidden',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    zIndex: 10,
-  },
+  aboutText: { color: '#666666', fontSize: 14, marginTop: 4, textAlign: 'center' },
   bioSection: {
     alignItems: 'center',
-    // marginTop: 10,
     paddingHorizontal: 20,
   },
-  container: { backgroundColor: '#fff', flex: 1 },
+  container: { backgroundColor: '#ffffff', flex: 1 },
   coverContainer: {
     alignItems: 'center',
     height: 280,
     justifyContent: 'center',
     overflow: 'hidden',
     width: '100%',
-    // borderBottomLeftRadius: 40,
-    // borderBottomRightRadius: 40,
   },
   coverImage: {
     height: '100%',
@@ -391,18 +379,8 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: '30%',
   },
-  deletePhotoIcon: {
-    alignItems: 'center',
-    backgroundColor: '#FF3B30',
-    borderColor: '#fff',
-    borderRadius: 20,
-    borderWidth: 2,
-    bottom: 0,
-    height: 40,
-    justifyContent: 'center',
-    left: 0,
-    position: 'absolute',
-    width: 40,
+  editIcon: {
+    padding: 4,
   },
   editIcons: {
     flexDirection: 'row',
@@ -412,31 +390,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingHorizontal: 15,
   },
-  editPhotoIcon: {
-    alignItems: 'center',
-    backgroundColor: '#FF822B',
-    borderColor: '#fff',
-    borderRadius: 20,
-    borderWidth: 2,
-    bottom: 0,
-    height: 40,
-    justifyContent: 'center',
-    position: 'absolute',
-    right: 0,
-    width: 40,
-  },
-  editProfileBtn: {
-    alignItems: 'center',
-    backgroundColor: '#FF822B10',
-    borderColor: '#FF822B',
-    borderRadius: 20,
-    borderWidth: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  editProfileText: { color: '#FF822B', fontSize: 14, fontWeight: 'bold' },
   inner: {
-    flex: 1,
     justifyContent: 'space-between',
     paddingHorizontal: 0,
   },
@@ -465,6 +419,12 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
   },
   name: { color: '#333', fontSize: 20, fontWeight: 'bold' },
+  nameRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
+    justifyContent: 'center',
+  },
   previewAddBox: {
     alignItems: 'center',
     backgroundColor: '#fff',
@@ -477,13 +437,6 @@ const styles = StyleSheet.create({
     width: 110,
   },
   previewImage: { borderRadius: 10, height: 110, width: 110 },
-  profileActions: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: 15,
-    justifyContent: 'center',
-    marginTop: 14,
-  },
   profileRow: {
     alignItems: 'center',
     backgroundColor: '#fff',
@@ -497,7 +450,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 8,
-    marginTop: 18,
     paddingHorizontal: 15,
   },
   sectionTitle: { fontSize: 16, fontWeight: 'bold' },
