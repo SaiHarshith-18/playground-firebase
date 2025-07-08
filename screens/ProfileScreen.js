@@ -204,102 +204,145 @@ export default function ProfileScreen() {
 
   if (loading) return <ActivityIndicator size="large" style={{ marginTop: 100 }} />;
 
-    return (
+  return (
     <SafeAreaView style={styles.container}>
       <View style={styles.inner}>
-        <View style={styles.profileRow}>
-          <View style={styles.coverContainer}>
-            <Image
-              source={avatar ? { uri: avatar } : require('../assets/no_image.png')}
-              style={avatar ? styles.coverImage : styles.defaultAvatar}
-            />
-            <View style={styles.threeDotsMenu}>
-              <Menu
-                visible={menuVisible}
-                onDismiss={() => setMenuVisible(false)}
-                anchor={
-                  <TouchableOpacity onPress={() => setMenuVisible(true)}>
-                    <Feather name="more-vertical" size={24} color="#fff" />
-                  </TouchableOpacity>
-                }
+        <View>
+          <View style={styles.editIcons}>
+            {editMode && (
+              <>
+                <TouchableOpacity onPress={handleSave}>
+                  <Ionicons name="checkmark-done" size={26} color="#4CAF50" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setEditMode(false)}>
+                  <Ionicons name="close" size={26} color="#f00" />
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+
+          <View style={styles.profileRow}>
+            <View style={styles.coverContainer}>
+             <Image source={avatar ? { uri: avatar } : require('../assets/no_image.png')} style={avatar ? styles.coverImage: styles.defaultAvatar} />
+              <View style={styles.threeDotsMenu}>
+                <Menu
+                  visible={menuVisible}
+                  onDismiss={() => setMenuVisible(false)}
+                  anchor={
+                    <TouchableOpacity onPress={() => setMenuVisible(true)}>
+                      <Feather name="more-vertical" size={24} color="#fff" />
+                    </TouchableOpacity>
+                  }
+                >
+                  <Menu.Item onPress={pickImage} title="Edit Photo" />
+                  <Menu.Item onPress={handleRemovePhoto} title="Delete Photo" />
+                </Menu>
+              </View>
+              <Svg
+                height={80}
+                width="100%"
+                viewBox="0 0 1440 200"
+                style={{ position: 'absolute', bottom: -1 }}
               >
-                <Menu.Item onPress={pickImage} title="Edit Photo" />
-                <Menu.Item onPress={handleRemovePhoto} title="Delete Photo" />
-              </Menu>
+                <Path
+                  fill="#fff"
+                  d="M0,96L60,122.7C120,149,240,203,360,197.3C480,192,600,128,720,101.3C840,75,960,85,1080,101.3C1200,117,1320,139,1380,149.3L1440,160L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"
+                />
+              </Svg>
+            </View>
+            <View style={styles.bioSection}>
+            {editMode ? (
+              <>
+                <TextInput
+                  style={styles.inputName}
+                  value={formData.fullName}
+                  onChangeText={text => setFormData({ ...formData, fullName: text })}
+                />
+                <TextInput
+                  style={styles.inputAbout}
+                  value={formData.about}
+                  onChangeText={text => setFormData({ ...formData, about: text })}
+                  multiline
+                  placeholder="Write something about yourself..."
+                />
+              </>
+            ) : (
+              <>
+                <Text style={styles.name}>{fullName}</Text>
+                <Text style={styles.aboutText}>{about || 'No bio added yet.'}</Text>
+              </>
+            )}
+          </View>
+
+            {/* <View style={styles.avatarCircle}>
+              <Image source={{ uri: avatar }} style={styles.avatarImage} />
+            </View> */}
+            <View style={styles.statsRow}>
+              {[
+                { label: 'Posts', value: posts },
+                { label: 'Followers', value: followers },
+                { label: 'Following', value: following },
+              ].map(stat => (
+                <View key={stat.label} style={styles.statBox}>
+                  <Text style={styles.statNumber}>{stat.value}</Text>
+                  <Text style={styles.statLabel}>{stat.label}</Text>
+                </View>
+              ))}
             </View>
           </View>
-        </View>
-        <View style={styles.bioSection}>
-          {editMode ? (
-            <>
-              <TextInput
-                style={styles.inputName}
-                value={formData.fullName}
-                onChangeText={text => setFormData({ ...formData, fullName: text })}
-              />
-              <TextInput
-                style={styles.inputAbout}
-                value={formData.about}
-                onChangeText={text => setFormData({ ...formData, about: text })}
-                multiline
-                placeholder="Write something about yourself..."
-              />
-            </>
-          ) : (
-            <>
-              <View style={styles.profileDetailsRow}>
-                <Text style={styles.name}>{fullName}</Text>
-                <TouchableOpacity onPress={() => setEditMode(true)}>
-                  <Feather name="edit-2" size={20} color="#FF822B" style={styles.editPenIcon} />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.aboutText}>{about || 'No bio added yet.'}</Text>
-            </>
-          )}
-        </View>
-        <View style={styles.statsRow}>
-          {[
-            { label: 'Posts', value: posts },
-            { label: 'Followers', value: followers },
-            { label: 'Following', value: following },
-          ].map(stat => (
-            <View key={stat.label} style={styles.statBox}>
-              <Text style={styles.statNumber}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-            </View>
-          ))}
-          <TouchableOpacity onPress={() => navigation.navigate('Suggestions')} style={styles.suggestionsIcon}>
-            <Ionicons name="people-outline" size={26} color="#FF822B" />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Photos and Videos</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('AllMedia')}>
-            <Text style={styles.seeAllText}>See all</Text>
-          </TouchableOpacity>
-        </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.mediaPreviewRow}>
-          <TouchableOpacity onPress={addNewMedia} style={styles.previewAddBox}>
-            <Ionicons name="add" size={28} color="#FF822B" />
-          </TouchableOpacity>
-          {mediaWithoutAdd.map(item => (
-            <View key={item.id} style={{ position: 'relative', marginRight: 10 }}>
-              <Image source={{ uri: item.url }} style={styles.previewImage} />
-              <TouchableOpacity
-                style={styles.threeDots}
-                onPress={() =>
-                  navigation.navigate('PostDetail', {
-                    post: item,
-                    onDelete: async id => handleDeletePost(id),
-                    onEdit: async post => handleEditPost(post),
-                  })
-                }
-              >
-                <Feather name="more-vertical" size={20} color="#fff" />
+          {!editMode && (
+            <View style={styles.profileActions}>
+              <TouchableOpacity style={styles.editProfileBtn} onPress={() => setEditMode(true)}>
+                <Text style={styles.editProfileText}>Edit Profile</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate('Suggestions')}>
+                <Ionicons name="people-outline" size={26} color="#FF822B" />
               </TouchableOpacity>
             </View>
-          ))}
-        </ScrollView>
+          )}
+
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Photos and Videos</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('AllMedia')}>
+              <Text style={styles.seeAllText}>See all</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.mediaPreviewRow}
+          >
+            <TouchableOpacity onPress={addNewMedia} style={styles.previewAddBox}>
+              <Ionicons name="add" size={28} color="#FF822B" />
+            </TouchableOpacity>
+            {mediaWithoutAdd.map(item => (
+              <View key={item.id} style={{ position: 'relative', marginRight: 10 }}>
+                <Image source={{ uri: item.url }} style={styles.previewImage} />
+                <TouchableOpacity
+                  style={styles.threeDots}
+                  onPress={() =>
+                    navigation.navigate('PostDetail', {
+                      post: item,
+                      onDelete: async id => handleDeletePost(id),
+                      onEdit: async post => handleEditPost(post),
+                    })
+                  }
+                >
+                  <Feather name="more-vertical" size={20} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Today's Events</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('AllUserEvents')}>
+              <Text style={styles.seeAllText}>See all</Text>
+            </TouchableOpacity>
+          </View>
+          <TodayUserEvents navigation={navigation} />
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -360,26 +403,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 4,
   },
-  profileDetailsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  editPenIcon: {
-    marginLeft: 8,
-  },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    alignItems: 'center',
+    width: '100%',
     marginTop: 20,
     marginBottom: 10,
     paddingHorizontal: 20,
-  },
-  suggestionsIcon: {
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   statBox: { alignItems: 'center' },
   statNumber: { fontWeight: 'bold', fontSize: 18, color: '#222' },
