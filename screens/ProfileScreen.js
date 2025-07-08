@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Menu } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 import {
@@ -20,7 +21,7 @@ import { db, auth } from '../firebaseConfig';
 import { AuthContext } from '../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import TodayUserEvents from './Events/TodayUserEvents';
-import UserAvatar from '../utils/UserAvatar';
+import Svg, { Path } from 'react-native-svg';
 import { IMGUR_CLIENT_ID } from '@env';
 
 const screenWidth = Dimensions.get('window').width;
@@ -35,6 +36,8 @@ export default function ProfileScreen() {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
   const [media, setMedia] = useState([{ id: 'add' }]);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -104,6 +107,7 @@ export default function ProfileScreen() {
         const userRef = doc(db, 'users', user.uid);
         await updateDoc(userRef, { avatar: imgurUrl });
         setProfileData(prev => ({ ...prev, avatar: imgurUrl }));
+        setMenuVisible(false);
       } catch (err) {
         console.error('Error updating avatar:', err);
         Alert.alert('Error', 'Failed to upload image');
@@ -118,6 +122,7 @@ export default function ProfileScreen() {
       await updateDoc(userRef, { avatar: '' });
       setProfileData(prev => ({ ...prev, avatar: '' }));
       Alert.alert('Removed', 'Profile photo removed.');
+      setMenuVisible(false);
     } catch (err) {
       console.error('Error removing avatar:', err);
       Alert.alert('Error', 'Failed to remove profile photo');
@@ -199,129 +204,102 @@ export default function ProfileScreen() {
 
   if (loading) return <ActivityIndicator size="large" style={{ marginTop: 100 }} />;
 
-  return (
+    return (
     <SafeAreaView style={styles.container}>
       <View style={styles.inner}>
-        <View>
-          <View style={styles.editIcons}>
-            {editMode && (
-              <>
-                <TouchableOpacity onPress={handleSave}>
-                  <Ionicons name="checkmark-done" size={26} color="#4CAF50" />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setEditMode(false)}>
-                  <Ionicons name="close" size={26} color="#f00" />
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-
-          <View style={styles.profileRow}>
-            <View style={styles.avatarWrapper}>
-              <UserAvatar avatar={avatar} style={styles.avatar} />
-              {editMode && (
-                <>
-                  <TouchableOpacity style={styles.editPhotoIcon} onPress={pickImage}>
-                    <Feather name="edit-2" size={16} color="#fff" />
+        <View style={styles.profileRow}>
+          <View style={styles.coverContainer}>
+            <Image
+              source={avatar ? { uri: avatar } : require('../assets/no_image.png')}
+              style={avatar ? styles.coverImage : styles.defaultAvatar}
+            />
+            <View style={styles.threeDotsMenu}>
+              <Menu
+                visible={menuVisible}
+                onDismiss={() => setMenuVisible(false)}
+                anchor={
+                  <TouchableOpacity onPress={() => setMenuVisible(true)}>
+                    <Feather name="more-vertical" size={24} color="#fff" />
                   </TouchableOpacity>
-                  {avatar ? (
-                    <TouchableOpacity style={styles.deletePhotoIcon} onPress={handleRemovePhoto}>
-                      <Feather name="trash-2" size={16} color="#fff" />
-                    </TouchableOpacity>
-                  ) : null}
-                </>
-              )}
-            </View>
-            <View style={styles.statsRow}>
-              {[
-                { label: 'Posts', value: posts },
-                { label: 'Followers', value: followers },
-                { label: 'Following', value: following },
-              ].map(stat => (
-                <View key={stat.label} style={styles.statBox}>
-                  <Text style={styles.statNumber}>{stat.value}</Text>
-                  <Text style={styles.statLabel}>{stat.label}</Text>
-                </View>
-              ))}
+                }
+              >
+                <Menu.Item onPress={pickImage} title="Edit Photo" />
+                <Menu.Item onPress={handleRemovePhoto} title="Delete Photo" />
+              </Menu>
             </View>
           </View>
-
-          <View style={styles.bioSection}>
-            {editMode ? (
-              <>
-                <TextInput
-                  style={styles.inputName}
-                  value={formData.fullName}
-                  onChangeText={text => setFormData({ ...formData, fullName: text })}
-                />
-                <TextInput
-                  style={styles.inputAbout}
-                  value={formData.about}
-                  onChangeText={text => setFormData({ ...formData, about: text })}
-                  multiline
-                  placeholder="Write something about yourself..."
-                />
-              </>
-            ) : (
-              <>
+        </View>
+        <View style={styles.bioSection}>
+          {editMode ? (
+            <>
+              <TextInput
+                style={styles.inputName}
+                value={formData.fullName}
+                onChangeText={text => setFormData({ ...formData, fullName: text })}
+              />
+              <TextInput
+                style={styles.inputAbout}
+                value={formData.about}
+                onChangeText={text => setFormData({ ...formData, about: text })}
+                multiline
+                placeholder="Write something about yourself..."
+              />
+            </>
+          ) : (
+            <>
+              <View style={styles.profileDetailsRow}>
                 <Text style={styles.name}>{fullName}</Text>
-                <Text style={styles.aboutText}>{about || 'No bio added yet.'}</Text>
-              </>
-            )}
-          </View>
-          {!editMode && (
-            <View style={styles.profileActions}>
-              <TouchableOpacity style={styles.editProfileBtn} onPress={() => setEditMode(true)}>
-                <Text style={styles.editProfileText}>Edit Profile</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.navigate('Suggestions')}>
-                <Ionicons name="people-outline" size={26} color="#FF822B" />
-              </TouchableOpacity>
-            </View>
-          )}
-
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Photos and Videos</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('AllMedia')}>
-              <Text style={styles.seeAllText}>See all</Text>
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.mediaPreviewRow}
-          >
-            <TouchableOpacity onPress={addNewMedia} style={styles.previewAddBox}>
-              <Ionicons name="add" size={28} color="#FF822B" />
-            </TouchableOpacity>
-            {mediaWithoutAdd.map(item => (
-              <View key={item.id} style={{ position: 'relative', marginRight: 10 }}>
-                <Image source={{ uri: item.url }} style={styles.previewImage} />
-                <TouchableOpacity
-                  style={styles.threeDots}
-                  onPress={() =>
-                    navigation.navigate('PostDetail', {
-                      post: item,
-                      onDelete: async id => handleDeletePost(id),
-                      onEdit: async post => handleEditPost(post),
-                    })
-                  }
-                >
-                  <Feather name="more-vertical" size={20} color="#fff" />
+                <TouchableOpacity onPress={() => setEditMode(true)}>
+                  <Feather name="edit-2" size={20} color="#FF822B" style={styles.editPenIcon} />
                 </TouchableOpacity>
               </View>
-            ))}
-          </ScrollView>
-
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Today's Events</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('AllUserEvents')}>
-              <Text style={styles.seeAllText}>See all</Text>
-            </TouchableOpacity>
-          </View>
-          <TodayUserEvents navigation={navigation} />
+              <Text style={styles.aboutText}>{about || 'No bio added yet.'}</Text>
+            </>
+          )}
         </View>
+        <View style={styles.statsRow}>
+          {[
+            { label: 'Posts', value: posts },
+            { label: 'Followers', value: followers },
+            { label: 'Following', value: following },
+          ].map(stat => (
+            <View key={stat.label} style={styles.statBox}>
+              <Text style={styles.statNumber}>{stat.value}</Text>
+              <Text style={styles.statLabel}>{stat.label}</Text>
+            </View>
+          ))}
+          <TouchableOpacity onPress={() => navigation.navigate('Suggestions')} style={styles.suggestionsIcon}>
+            <Ionicons name="people-outline" size={26} color="#FF822B" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Photos and Videos</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('AllMedia')}>
+            <Text style={styles.seeAllText}>See all</Text>
+          </TouchableOpacity>
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.mediaPreviewRow}>
+          <TouchableOpacity onPress={addNewMedia} style={styles.previewAddBox}>
+            <Ionicons name="add" size={28} color="#FF822B" />
+          </TouchableOpacity>
+          {mediaWithoutAdd.map(item => (
+            <View key={item.id} style={{ position: 'relative', marginRight: 10 }}>
+              <Image source={{ uri: item.url }} style={styles.previewImage} />
+              <TouchableOpacity
+                style={styles.threeDots}
+                onPress={() =>
+                  navigation.navigate('PostDetail', {
+                    post: item,
+                    onDelete: async id => handleDeletePost(id),
+                    onEdit: async post => handleEditPost(post),
+                  })
+                }
+              >
+                <Feather name="more-vertical" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -332,8 +310,7 @@ const styles = StyleSheet.create({
   inner: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingHorizontal: 15,
-    // paddingVertical: 18,
+    paddingHorizontal: 0,
   },
   editIcons: {
     flexDirection: 'row',
@@ -341,56 +318,86 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
     gap: 15,
+    paddingHorizontal: 15,
   },
-  profileRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
-  avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 2,
-    borderColor: '#ccc',
-  },
-  avatarWrapper: { position: 'relative' },
-  defaultAvatarWrapper: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 2,
-    borderColor: '#ccc',
+  profileRow: {
+    backgroundColor: '#fff',
+    paddingBottom: 20,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
     alignItems: 'center',
-    justifyContent: 'center',
+    overflow: 'hidden',
   },
-  addPhotoIcon: {
+  avatarCircle: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#FF822B',
-    borderRadius: 14,
-    width: 28,
-    height: 28,
+    top: 200, // adjust based on cover height
+    alignSelf: 'center',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 4,
+    borderColor: '#fff',
+    backgroundColor: '#fff',
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 10,
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  threeDotsMenu: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+    padding: 4,
+  },
+  profileDetailsRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderColor: '#fff',
-    borderWidth: 2,
+    gap: 8,
+  },
+  editPenIcon: {
+    marginLeft: 8,
   },
   statsRow: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginLeft: 15,
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 10,
+    paddingHorizontal: 20,
+  },
+  suggestionsIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statBox: { alignItems: 'center' },
-  statNumber: { fontWeight: 'bold', fontSize: 16 },
-  statLabel: { fontSize: 13, color: '#555' },
-  bioSection: { marginTop: 12 },
-  name: { fontWeight: 'bold', fontSize: 16 },
-  aboutText: { fontSize: 14, color: '#444', marginTop: 4 },
+  statNumber: { fontWeight: 'bold', fontSize: 18, color: '#222' },
+  statLabel: { fontSize: 13, color: '#777' },
+  bioSection: {
+    alignItems: 'center',
+    // marginTop: 10,
+    paddingHorizontal: 20,
+  },
+  name: { fontWeight: 'bold', fontSize: 20, color: '#333' },
+  aboutText: { fontSize: 14, color: '#666', textAlign: 'center', marginTop: 6 },
   inputName: {
     fontSize: 16,
     fontWeight: 'bold',
     borderBottomWidth: 1,
     borderColor: '#ccc',
     marginBottom: 4,
+    textAlign: 'center',
   },
   inputAbout: {
     fontSize: 14,
@@ -400,27 +407,30 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     minHeight: 40,
     textAlignVertical: 'top',
+    textAlign: 'center',
   },
   profileActions: {
     flexDirection: 'row',
+    justifyContent: 'center',
     gap: 15,
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: 14,
   },
   editProfileBtn: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
+    borderColor: '#FF822B',
+    backgroundColor: '#FF822B10',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    minWidth: '85%',
   },
-  editProfileText: { fontSize: 14, fontWeight: 'bold', color: '#333' },
+  editProfileText: { fontSize: 14, fontWeight: 'bold', color: '#FF822B' },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: 15,
     marginBottom: 8,
     marginTop: 18,
   },
@@ -430,7 +440,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     marginVertical: 10,
-    marginLeft: 4,
+    paddingLeft: 15,
   },
   previewAddBox: {
     width: 110,
@@ -457,27 +467,45 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
     backgroundColor: '#FF822B',
-    borderRadius: 14,
-    width: 28,
-    height: 28,
+    borderRadius: 20,
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
     borderColor: '#fff',
     borderWidth: 2,
-    zIndex: 2,
   },
   deletePhotoIcon: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     backgroundColor: '#FF3B30',
-    borderRadius: 14,
-    width: 28,
-    height: 28,
+    borderRadius: 20,
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
     borderColor: '#fff',
     borderWidth: 2,
-    zIndex: 2,
   },
+  coverContainer: {
+    width: '100%',
+    height: 280,
+    overflow: 'hidden',
+    alignItems : 'center',
+    justifyContent: 'center',
+    // borderBottomLeftRadius: 40,
+    // borderBottomRightRadius: 40,
+  },
+
+  coverImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  defaultAvatar: {
+    width: '30%',
+    height: '30%',
+    resizeMode: 'contain',
+  }
 });
