@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useContext, useRef, useCallback } from 'react';
 import {
   View,
@@ -15,12 +14,7 @@ import * as Location from 'expo-location';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import RedPin from '../../assets/location_pin.png';
-import {
-  doc,
-  getDoc,
-  collection,
-  getDocs,
-} from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';

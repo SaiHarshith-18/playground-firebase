@@ -8,13 +8,7 @@ import {
   TextInput,
   SafeAreaView,
 } from 'react-native';
-import {
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-  getDoc,
-} from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';

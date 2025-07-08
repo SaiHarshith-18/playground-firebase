@@ -1,26 +1,25 @@
 {
-    "cli": {
-      "appVersionSource": "local"      
-    },
-  
-    "build": {
-      "production": {
-        "android": {
-          "buildType": "apk"
-        },
-        "ios": {
-          "simulator": false           
-        }
+  "cli": {
+    "appVersionSource": "local"
+  },
+
+  "build": {
+    "production": {
+      "android": {
+        "buildType": "apk"
       },
-  
-      "preview": {
-        "android": {
-          "buildType": "apk"
-        },
-        "ios": {
-          "simulator": true            
-        }
+      "ios": {
+        "simulator": false
+      }
+    },
+
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
       }
     }
   }
-  
+}

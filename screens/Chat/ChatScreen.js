@@ -34,41 +34,44 @@ export default function ChatScreen({ route, navigation }) {
 
   const chatId = user && chatUser ? [user.uid, chatUser.uid].sort().join('_') : null;
 
- useEffect(() => {
-  let unsubscribe;
+  useEffect(() => {
+    let unsubscribe;
 
-  const initChat = async () => {
-    if (!user || !chatUser || !chatId) return;
+    const initChat = async () => {
+      if (!user || !chatUser || !chatId) return;
 
-    try {
-      const chatRef = doc(db, 'chats', chatId);
-      await setDoc(chatRef, {
-        users: [user.uid, chatUser.uid],
-        createdAt: serverTimestamp(),
-      }, { merge: true });
+      try {
+        const chatRef = doc(db, 'chats', chatId);
+        await setDoc(
+          chatRef,
+          {
+            users: [user.uid, chatUser.uid],
+            createdAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
 
-      const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
-      unsubscribe = onSnapshot(
-        q,
-        snapshot => {
-          setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        },
-        error => {
-          console.error("Firestore snapshot error:", error);
-        }
-      );
-    } catch (err) {
-      console.error("Error initializing chat:", err);
-    }
-  };
+        const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
+        unsubscribe = onSnapshot(
+          q,
+          snapshot => {
+            setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+          },
+          error => {
+            console.error('Firestore snapshot error:', error);
+          }
+        );
+      } catch (err) {
+        console.error('Error initializing chat:', err);
+      }
+    };
 
-  initChat();
+    initChat();
 
-  return () => {
-    if (unsubscribe) unsubscribe();
-  };
-}, [user, chatUser, chatId]);
-
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [user, chatUser, chatId]);
 
   const checkFriendshipBeforeSend = async () => {
     if (!user) return false;
@@ -122,7 +125,7 @@ export default function ChatScreen({ route, navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#FF822B" />
         </TouchableOpacity>
-        <UserAvatar avatar={chatUser.avatar} style={styles.headerAvatar} size={36}/>
+        <UserAvatar avatar={chatUser.avatar} style={styles.headerAvatar} size={36} />
         <Text style={styles.headerTitle}>{chatUser.fullName || 'Chat User'}</Text>
       </View>
       <FlatList

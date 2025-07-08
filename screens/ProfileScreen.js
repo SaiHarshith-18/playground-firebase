@@ -1,10 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Menu } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
-import { useFocusEffect } from '@react-navigation/native';
 import {
+  Dimensions,
   View,
   Text,
   StyleSheet,
@@ -15,6 +11,9 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Menu } from 'react-native-paper';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
@@ -23,10 +22,6 @@ import * as ImagePicker from 'expo-image-picker';
 import TodayUserEvents from './Events/TodayUserEvents';
 import Svg, { Path } from 'react-native-svg';
 import { IMGUR_CLIENT_ID } from '@env';
-
-const screenWidth = Dimensions.get('window').width;
-const ITEM_MARGIN = 4;
-const NUM_COLUMNS = 3;
 
 export default function ProfileScreen() {
   const { user } = useContext(AuthContext);
@@ -206,7 +201,7 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.inner}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.inner}>
         <View>
           <View style={styles.editIcons}>
             {editMode && (
@@ -223,7 +218,10 @@ export default function ProfileScreen() {
 
           <View style={styles.profileRow}>
             <View style={styles.coverContainer}>
-             <Image source={avatar ? { uri: avatar } : require('../assets/no_image.png')} style={avatar ? styles.coverImage: styles.defaultAvatar} />
+              <Image
+                source={avatar ? { uri: avatar } : require('../assets/no_image.png')}
+                style={avatar ? styles.coverImage : styles.defaultAvatar}
+              />
               <View style={styles.threeDotsMenu}>
                 <Menu
                   visible={menuVisible}
@@ -251,28 +249,28 @@ export default function ProfileScreen() {
               </Svg>
             </View>
             <View style={styles.bioSection}>
-            {editMode ? (
-              <>
-                <TextInput
-                  style={styles.inputName}
-                  value={formData.fullName}
-                  onChangeText={text => setFormData({ ...formData, fullName: text })}
-                />
-                <TextInput
-                  style={styles.inputAbout}
-                  value={formData.about}
-                  onChangeText={text => setFormData({ ...formData, about: text })}
-                  multiline
-                  placeholder="Write something about yourself..."
-                />
-              </>
-            ) : (
-              <>
-                <Text style={styles.name}>{fullName}</Text>
-                <Text style={styles.aboutText}>{about || 'No bio added yet.'}</Text>
-              </>
-            )}
-          </View>
+              {editMode ? (
+                <>
+                  <TextInput
+                    style={styles.inputName}
+                    value={formData.fullName}
+                    onChangeText={text => setFormData({ ...formData, fullName: text })}
+                  />
+                  <TextInput
+                    style={styles.inputAbout}
+                    value={formData.about}
+                    onChangeText={text => setFormData({ ...formData, about: text })}
+                    multiline
+                    placeholder="Write something about yourself..."
+                  />
+                </>
+              ) : (
+                <>
+                  <Text style={styles.name}>{fullName}</Text>
+                  <Text style={styles.aboutText}>{about || 'No bio added yet.'}</Text>
+                </>
+              )}
+            </View>
 
             {/* <View style={styles.avatarCircle}>
               <Image source={{ uri: avatar }} style={styles.avatarImage} />
@@ -336,41 +334,20 @@ export default function ProfileScreen() {
           </ScrollView>
 
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Today's Events</Text>
+            <Text style={styles.sectionTitle}>Today&#39;s Events</Text>
             <TouchableOpacity onPress={() => navigation.navigate('AllUserEvents')}>
               <Text style={styles.seeAllText}>See all</Text>
             </TouchableOpacity>
           </View>
           <TodayUserEvents navigation={navigation} />
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  inner: {
-    flex: 1,
-    justifyContent: 'space-between',
-    paddingHorizontal: 0,
-  },
-  editIcons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 10,
-    marginBottom: 10,
-    gap: 15,
-    paddingHorizontal: 15,
-  },
-  profileRow: {
-    backgroundColor: '#fff',
-    paddingBottom: 20,
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
+  aboutText: { color: '#666', fontSize: 14, marginTop: 6, textAlign: 'center' },
   avatarCircle: {
     position: 'absolute',
     top: 200, // adjust based on cover height
@@ -389,153 +366,169 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     zIndex: 10,
   },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  threeDotsMenu: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 20,
-    padding: 4,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginTop: 20,
-    marginBottom: 10,
-    paddingHorizontal: 20,
-  },
-  statBox: { alignItems: 'center' },
-  statNumber: { fontWeight: 'bold', fontSize: 18, color: '#222' },
-  statLabel: { fontSize: 13, color: '#777' },
   bioSection: {
     alignItems: 'center',
     // marginTop: 10,
     paddingHorizontal: 20,
   },
-  name: { fontWeight: 'bold', fontSize: 20, color: '#333' },
-  aboutText: { fontSize: 14, color: '#666', textAlign: 'center', marginTop: 6 },
+  container: { backgroundColor: '#fff', flex: 1 },
+  coverContainer: {
+    alignItems: 'center',
+    height: 280,
+    justifyContent: 'center',
+    overflow: 'hidden',
+    width: '100%',
+    // borderBottomLeftRadius: 40,
+    // borderBottomRightRadius: 40,
+  },
+  coverImage: {
+    height: '100%',
+    resizeMode: 'cover',
+    width: '100%',
+  },
+  defaultAvatar: {
+    height: '30%',
+    resizeMode: 'contain',
+    width: '30%',
+  },
+  deletePhotoIcon: {
+    alignItems: 'center',
+    backgroundColor: '#FF3B30',
+    borderColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 2,
+    bottom: 0,
+    height: 40,
+    justifyContent: 'center',
+    left: 0,
+    position: 'absolute',
+    width: 40,
+  },
+  editIcons: {
+    flexDirection: 'row',
+    gap: 15,
+    justifyContent: 'flex-end',
+    marginBottom: 10,
+    marginTop: 10,
+    paddingHorizontal: 15,
+  },
+  editPhotoIcon: {
+    alignItems: 'center',
+    backgroundColor: '#FF822B',
+    borderColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 2,
+    bottom: 0,
+    height: 40,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: 0,
+    width: 40,
+  },
+  editProfileBtn: {
+    alignItems: 'center',
+    backgroundColor: '#FF822B10',
+    borderColor: '#FF822B',
+    borderRadius: 20,
+    borderWidth: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  editProfileText: { color: '#FF822B', fontSize: 14, fontWeight: 'bold' },
+  inner: {
+    flex: 1,
+    justifyContent: 'space-between',
+    paddingHorizontal: 0,
+  },
+  inputAbout: {
+    borderColor: '#ccc',
+    borderRadius: 6,
+    borderWidth: 1,
+    fontSize: 14,
+    minHeight: 40,
+    padding: 8,
+    textAlign: 'center',
+    textAlignVertical: 'top',
+  },
   inputName: {
-    fontSize: 16,
-    fontWeight: 'bold',
     borderBottomWidth: 1,
     borderColor: '#ccc',
+    fontSize: 16,
+    fontWeight: 'bold',
     marginBottom: 4,
     textAlign: 'center',
   },
-  inputAbout: {
-    fontSize: 14,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 8,
-    borderRadius: 6,
-    minHeight: 40,
-    textAlignVertical: 'top',
-    textAlign: 'center',
-  },
-  profileActions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 15,
-    alignItems: 'center',
-    marginTop: 14,
-  },
-  editProfileBtn: {
-    borderWidth: 1,
-    borderColor: '#FF822B',
-    backgroundColor: '#FF822B10',
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-  },
-  editProfileText: { fontSize: 14, fontWeight: 'bold', color: '#FF822B' },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    marginBottom: 8,
-    marginTop: 18,
-  },
-  sectionTitle: { fontWeight: 'bold', fontSize: 16 },
-  seeAllText: { color: '#FF822B', fontSize: 14 },
   mediaPreviewRow: {
     flexDirection: 'row',
     gap: 12,
     marginVertical: 10,
     paddingLeft: 15,
   },
+  name: { color: '#333', fontSize: 20, fontWeight: 'bold' },
   previewAddBox: {
-    width: 110,
-    height: 110,
-    borderWidth: 2,
-    borderColor: '#FF822B',
-    borderStyle: 'dashed',
-    borderRadius: 10,
-    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+    borderColor: '#FF822B',
+    borderRadius: 10,
+    borderStyle: 'dashed',
+    borderWidth: 2,
+    height: 110,
+    justifyContent: 'center',
+    width: 110,
   },
-  previewImage: { width: 110, height: 110, borderRadius: 10 },
+  previewImage: { borderRadius: 10, height: 110, width: 110 },
+  profileActions: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 15,
+    justifyContent: 'center',
+    marginTop: 14,
+  },
+  profileRow: {
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+    overflow: 'hidden',
+    paddingBottom: 20,
+  },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    marginTop: 18,
+    paddingHorizontal: 15,
+  },
+  sectionTitle: { fontSize: 16, fontWeight: 'bold' },
+  seeAllText: { color: '#FF822B', fontSize: 14 },
+  statBox: { alignItems: 'center' },
+  statLabel: { color: '#777', fontSize: 13 },
+  statNumber: { color: '#222', fontSize: 18, fontWeight: 'bold' },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 10,
+    marginTop: 20,
+    paddingHorizontal: 20,
+    width: '100%',
+  },
+
   threeDots: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 12,
     padding: 2,
-  },
-  editPhotoIcon: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#FF822B',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderColor: '#fff',
-    borderWidth: 2,
+    right: 6,
+    top: 6,
   },
-  deletePhotoIcon: {
+  threeDotsMenu: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+    padding: 4,
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    backgroundColor: '#FF3B30',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderColor: '#fff',
-    borderWidth: 2,
+    right: 10,
+    top: 10,
+    zIndex: 10,
   },
-  coverContainer: {
-    width: '100%',
-    height: 280,
-    overflow: 'hidden',
-    alignItems : 'center',
-    justifyContent: 'center',
-    // borderBottomLeftRadius: 40,
-    // borderBottomRightRadius: 40,
-  },
-
-  coverImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  defaultAvatar: {
-    width: '30%',
-    height: '30%',
-    resizeMode: 'contain',
-  }
 });
