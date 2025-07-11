@@ -69,7 +69,6 @@ Playground is a social event and chat platform designed for students and communi
 
 ### 7. **Notifications**
 
-- **Notification Screen:** Placeholder for future notification features.
 - **Settings:** Access app settings, help, about, and logout.
 
 ---
