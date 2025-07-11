@@ -31,12 +31,6 @@ export default function SettingsScreen() {
           onPress={() => navigation.navigate('Profile')}
         />
 
-        <List.Item
-          title="Notifications"
-          left={() => <Ionicons name="notifications-outline" size={22} color="#555" />}
-          onPress={() => navigation.navigate('Notifications')}
-        />
-
         <Divider />
 
         <List.Subheader style={styles.subheader}>App</List.Subheader>
