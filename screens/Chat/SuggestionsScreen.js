@@ -170,8 +170,16 @@ export default function MessageScreen() {
   // ...existing code...
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{ paddingHorizontal: 16 }}>
+      <View style={styles.headerRow}>
+        <TouchableOpacity
+          style={styles.profileArrow}
+          onPress={() => navigation.navigate('MainApp', { screen: 'Profile' })}
+        >
+          <Ionicons name="close" size={28} color="#000" />
+        </TouchableOpacity>
         <Text style={styles.title}>Suggestions</Text>
+      </View>
+      <View style={{ paddingHorizontal: 16 }}>
         <TextInput
           style={styles.searchInput}
           value={search}
@@ -215,66 +223,78 @@ export default function MessageScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
-  subHeading: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  searchInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginBottom: 16,
-    fontSize: 14,
-    backgroundColor: '#f9f9f9',
-  },
-  userCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  userName: { fontSize: 16 },
-  connectBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FF822B',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-  },
-  connectBtnText: { color: '#fff', marginLeft: 6 },
-  messageBtn: {
-    backgroundColor: 'grey',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   acceptBtn: {
-    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#4CAF50',
     borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
+    flexDirection: 'row',
     marginLeft: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
   },
   cancelBtn: {
-    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FF3B30',
     borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
+    flexDirection: 'row',
     marginLeft: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
   },
+  connectBtn: {
+    alignItems: 'center',
+    backgroundColor: '#FF822B',
+    borderRadius: 6,
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  connectBtnText: { color: '#fff', marginLeft: 6 },
+  container: { backgroundColor: '#fff', flex: 1 },
+  headerRow: {
+    alignItems: 'center',
+    flexDirection: 'row-reverse',
+    gap: 5,
+    justifyContent: 'space-between',
+    paddingBottom: 4,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  messageBtn: {
+    alignItems: 'center',
+    backgroundColor: 'grey',
+    borderRadius: 6,
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  profileArrow: {
+    padding: 4,
+  },
+  searchInput: {
+    backgroundColor: '#f9f9f9',
+    borderColor: '#ccc',
+    borderRadius: 8,
+    borderWidth: 1,
+    fontSize: 14,
+    marginBottom: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  subHeading: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    marginTop: 20,
+  },
+  title: { fontSize: 22, fontWeight: 'bold' },
+  userCard: {
+    alignItems: 'center',
+    borderBottomColor: '#eee',
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+  },
+  userName: { fontSize: 16 },
 });
