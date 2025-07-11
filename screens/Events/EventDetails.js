@@ -84,7 +84,7 @@ export default function EventDetails({ route, navigation }) {
               await deleteDoc(doc(db, 'events', event.id));
               if (route.params?.onDelete) route.params.onDelete();
               Alert.alert('Deleted', 'Event deleted');
-              navigation.goBack();
+              navigation.reset('AllUserEvents');
             } catch (e) {
               Alert.alert('Error', 'Failed to delete event.');
               console.error('Delete event error:', e);
@@ -120,9 +120,7 @@ export default function EventDetails({ route, navigation }) {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
           <View style={styles.headerRow}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('MainApp', { screen: 'AllUserEvents' })}
-            >
+            <TouchableOpacity onPress={() => navigation.goBack()}>
               <Ionicons name="arrow-back" size={28} color="black" />
             </TouchableOpacity>
             <Text style={styles.title}>{event.title}</Text>
@@ -165,7 +163,7 @@ export default function EventDetails({ route, navigation }) {
             ) : (
               attendeeUsers.map(user => (
                 <View key={user.uid} style={styles.attendeeCard}>
-                  <UserAvatar avatar={user.avatar} size={40} style={styles.attendeeAvatar} />
+                  <UserAvatar avatar={user.avatar} size={60} style={styles.attendeeAvatar} />
                   <Text style={styles.attendeeName}>{user.fullName || 'User'}</Text>
                 </View>
               ))
@@ -178,88 +176,90 @@ export default function EventDetails({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#fff' },
-  container: { padding: 20 },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-    justifyContent: 'center',
-    width: '100%',
-    position: 'relative',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FF822B',
-    textAlign: 'center',
-    flex: 1,
-    paddingLeft: 0,
-  },
-  label: { fontSize: 16, fontWeight: '600', color: '#444', marginTop: 16 },
-  value: { fontSize: 15, color: '#333', marginTop: 4 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    padding: 8,
-    marginTop: 6,
-  },
-  editActions: {
-    flexDirection: 'row',
-    marginTop: 20,
-    justifyContent: 'space-around',
-  },
-  saveBtn: {
-    backgroundColor: '#FF822B',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  btnText: { color: '#fff', fontWeight: 'bold' },
-  joinBtn: {
-    backgroundColor: '#FF822B',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 12,
-    alignSelf: 'center',
-    elevation: 2,
-  },
-  joinText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  attendeeList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 8,
-    gap: 12,
-  },
-  attendeeCard: {
-    alignItems: 'center',
-    marginRight: 16,
-    marginBottom: 8,
-    width: 70,
-  },
   attendeeAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 60, // Increase avatar size
+    height: 60,
+    borderRadius: 30,
     backgroundColor: '#fff',
     borderWidth: 2,
     borderColor: '#FF822B',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    marginBottom: 4,
+    marginBottom: 6,
+  },
+  attendeeCard: {
+    alignItems: 'center',
+    marginBottom: 12,
+    flexBasis: '30%', // About 3 per row, but will expand if fewer
+    flexGrow: 1, // Allow to grow and fill row
+    maxWidth: '32%', // Prevent more than 3 per row
+  },
+  attendeeList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+    gap: 0, // Remove gap if you want them to touch
+    justifyContent: 'space-between', // Distribute evenly
   },
   attendeeName: {
-    fontSize: 12,
     color: '#333',
+    fontSize: 14,
     textAlign: 'center',
   },
+  btnText: { color: '#fff', fontWeight: 'bold' },
+  container: { padding: 20 },
+  editActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 20,
+  },
+  headerRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+    position: 'relative',
+    width: '100%',
+  },
+  input: {
+    borderColor: '#ccc',
+    borderRadius: 6,
+    borderWidth: 1,
+    marginTop: 6,
+    padding: 8,
+  },
+  joinBtn: {
+    alignItems: 'center',
+    alignSelf: 'center',
+    backgroundColor: '#FF822B',
+    borderRadius: 8,
+    elevation: 2,
+    marginBottom: 12,
+    marginTop: 24,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+  },
+  joinText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  label: { color: '#444', fontSize: 16, fontWeight: '600', marginTop: 16 },
+  safeArea: { backgroundColor: '#fff', flex: 1 },
+  saveBtn: {
+    backgroundColor: '#FF822B',
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  title: {
+    color: '#FF822B',
+    flex: 1,
+    fontSize: 24,
+    fontWeight: 'bold',
+    paddingLeft: 0,
+    textAlign: 'center',
+  },
+  value: { color: '#333', fontSize: 15, marginTop: 4 },
 });

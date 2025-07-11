@@ -1,5 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import { View, TouchableOpacity, Image, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -11,14 +13,39 @@ import SettingScreen from '../screens/Notifications/SettingScreen';
 import { useCalloutModal } from '../contexts/callOutModalContext';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
+function ProfileStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        gestureEnabled: false,
+        gestureResponseDistance: { horizontal: 0 },
+        animationEnabled: false,
+      }}
+    >
+      <Stack.Screen
+        name="ProfileMain"
+        component={ProfileScreen}
+        options={{
+          gestureEnabled: false,
+          gestureResponseDistance: { horizontal: 0 },
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
 
 export default function BottomTabNavigator() {
   const { openCallout } = useCalloutModal();
+
   return (
     <Tab.Navigator
       screenOptions={{
         swipeEnabled: false,
         headerShown: false,
+        gestureEnabled: false,
         tabBarShowLabel: false,
         tabBarStyle: {
           paddingTop: Platform.OS === 'ios' ? 10 : 0,
@@ -39,8 +66,10 @@ export default function BottomTabNavigator() {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={ProfileStack}
         options={{
+          gestureEnabled: false,
+          swipeEnabled: false,
           tabBarIcon: ({ focused }) => (
             <View style={styles.iconContainer}>
               <Ionicons name="person-outline" size={30} color={focused ? '#FF822B' : 'gray'} />
@@ -104,28 +133,28 @@ export default function BottomTabNavigator() {
 }
 
 const styles = StyleSheet.create({
-  iconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 40,
-  },
   bottomLine: {
-    marginTop: 2,
-    height: 3,
-    width: 24,
     backgroundColor: '#EF6607',
     borderRadius: 2,
+    height: 3,
+    marginTop: 2,
+    width: 24,
   },
   calloutButton: {
-    width: 105,
-    height: 105,
-    position: 'absolute',
     bottom: 0,
+    elevation: 8,
+    height: 105,
+    left: -5,
+    position: 'absolute',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
-    elevation: 8,
-    left: -5,
+    width: 105,
+  },
+  iconContainer: {
+    alignItems: 'center',
+    height: 40,
+    justifyContent: 'center',
   },
 });

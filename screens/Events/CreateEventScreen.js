@@ -147,6 +147,17 @@ export default function CreateEventScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <TouchableOpacity
+        style={styles.closeBtn}
+        onPress={() =>
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'MainApp', params: { screen: 'Home' } }],
+          })
+        }
+      >
+        <Ionicons name="close" size={28} color="#333" />
+      </TouchableOpacity>
       <View style={styles.container}>
         <TextInput
           placeholder="Event Title"
@@ -225,32 +236,40 @@ export default function CreateEventScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
+  closeBtn: {
+    padding: 8,
+    position: 'absolute',
+    right: 20,
+    top: Platform.OS === 'ios' ? 50 : 20,
+    zIndex: 10,
   },
   container: {
-    padding: 16,
     flex: 1,
+    margin: 16,
+    padding: 16,
   },
   input: {
-    marginBottom: 12,
-    borderWidth: 1,
     borderColor: '#ccc',
-    padding: 10,
     borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 12,
+    padding: 10,
   },
   locationInput: {
-    flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
     marginBottom: 12,
+    padding: 12,
   },
   locationText: {
-    marginLeft: 10,
     color: '#333',
+    marginLeft: 10,
+  },
+  safeArea: {
+    backgroundColor: '#fff',
+    flex: 1,
   },
 });

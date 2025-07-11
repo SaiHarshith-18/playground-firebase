@@ -197,7 +197,7 @@ export default function HomeScreen() {
       <View style={styles.topRightContainer}>
         <TouchableOpacity
           style={styles.profileContainer}
-          onPress={() => navigation.navigate('Profile')}
+          onPress={() => navigation.reset('Profile')}
           activeOpacity={0.7}
         >
           <View style={styles.profileImageContainer}>

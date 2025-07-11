@@ -4,7 +4,6 @@ import {
   Text,
   ActivityIndicator,
   StyleSheet,
-  Linking,
   TouchableOpacity,
   LayoutAnimation,
   Platform,
@@ -15,13 +14,12 @@ import {
 import * as Location from 'expo-location';
 import { Menu, Provider as PaperProvider, List } from 'react-native-paper';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { EventCard } from './EventCard';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { doc, deleteDoc } from 'firebase/firestore';
 import { parseEventDateTime } from '../../utils/Date.js';
 import { getDistance, openMap } from '../../utils/Location';
 
@@ -117,11 +115,6 @@ export default function UserEventList() {
     });
   };
 
-  const handleSortChange = type => {
-    setSortBy(prev => (prev === type ? 'dateAsc' : type));
-    setSortMenuVisible(false);
-  };
-
   const filterEvents = data => {
     const now = new Date();
     return data.filter(event => {
@@ -208,6 +201,12 @@ export default function UserEventList() {
     <PaperProvider>
       <SafeAreaView style={styles.wrapper}>
         <View style={styles.iconBar}>
+          <TouchableOpacity
+            style={styles.profileArrow}
+            onPress={() => navigation.navigate('MainApp', { screen: 'Profile' })}
+          >
+            <Ionicons name="arrow-back-circle-outline" size={28} color="#FF822B" />
+          </TouchableOpacity>
           <TextInput
             style={styles.searchBar}
             placeholder="Search by title, description, or location"
@@ -431,88 +430,91 @@ export default function UserEventList() {
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    backgroundColor: '#fff',
-    flex: 1,
-    paddingHorizontal: 0,
-  },
-  searchBar: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
+  createEventBtn: {
+    backgroundColor: '#FF822B',
     borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 16,
-    marginRight: 8,
-  },
-  iconBtn: {
-    padding: 6,
-    marginLeft: 2,
-  },
-  iconBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginTop: 8,
-    marginRight: 16,
-    marginLeft: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
   },
-  eventCard: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  day: { fontSize: 18, fontWeight: 'bold', color: '#FF822B' },
-  month: { fontSize: 12, color: '#888', marginTop: -2 },
-  sectionTitle: {
-    fontSize: 20,
+  createEventBtnText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#222',
-    marginTop: 18,
+  },
+  day: { color: '#FF822B', fontSize: 18, fontWeight: 'bold' },
+  emptyText: {
+    color: '#666',
+    fontSize: 15,
     marginBottom: 8,
-    marginLeft: 16,
+    textAlign: 'center',
   },
   emptyUserEvents: {
     alignItems: 'center',
     marginVertical: 16,
     paddingHorizontal: 16,
   },
-  emptyText: {
-    color: '#666',
-    fontSize: 15,
-    textAlign: 'center',
-    marginBottom: 8,
+  eventCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    elevation: 3,
+    flexDirection: 'row',
+    marginBottom: 16,
+    padding: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  createEventBtn: {
-    backgroundColor: '#FF822B',
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 24,
+  iconBar: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginLeft: 16,
+    marginRight: 16,
     marginTop: 8,
   },
-  createEventBtnText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
+  iconBtn: {
+    marginLeft: 2,
+    padding: 6,
   },
   loadMoreBtn: {
+    alignSelf: 'center',
     backgroundColor: '#FFE5D1',
     borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    alignSelf: 'center',
     marginVertical: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
   },
   loadMoreText: {
     color: '#FF822B',
-    fontWeight: 'bold',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  month: { color: '#888', fontSize: 12, marginTop: -2 },
+  profileArrow: {
+    padding: 4,
+  },
+  searchBar: {
+    borderColor: '#ccc',
+    borderRadius: 8,
+    borderWidth: 1,
+    flex: 1,
+    fontSize: 16,
+    marginRight: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  sectionTitle: {
+    color: '#222',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    marginLeft: 16,
+    marginTop: 18,
+  },
+  wrapper: {
+    backgroundColor: '#fff',
+    flex: 1,
+    paddingHorizontal: 0,
   },
 });

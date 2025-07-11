@@ -20,7 +20,10 @@ export default function PostDetailScreen({ route, navigation }) {
         const filteredMedia = (data.media || []).filter(item => item.id !== post.id);
         await setDoc(userRef, { media: filteredMedia }, { merge: true });
       }
-      navigation.goBack();
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainApp', params: { screen: 'Profile' } }],
+      });
       Alert.alert('Post Deleted', 'Your media post was successfully removed.');
     } catch (error) {
       Alert.alert('Delete Failed', error.message);
@@ -59,7 +62,7 @@ export default function PostDetailScreen({ route, navigation }) {
             );
             await updateDoc(userRef, { media: updatedMedia });
           }
-          navigation.goBack();
+          navigation.replace('MainApp', { screen: 'Profile' });
         });
       }
     } catch (error) {
@@ -69,7 +72,10 @@ export default function PostDetailScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity style={styles.close} onPress={() => navigation.goBack()}>
+      <TouchableOpacity
+        style={styles.close}
+        onPress={() => navigation.reset('MainApp', { screen: 'Profile' })}
+      >
         <Ionicons name="close" size={28} color="#fff" />
       </TouchableOpacity>
       <Image source={{ uri: post.url }} style={styles.image} />
@@ -96,39 +102,39 @@ export default function PostDetailScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-    padding: 16,
-    justifyContent: 'center',
+  button: {
     alignItems: 'center',
+    borderRadius: 8,
+    marginTop: 10,
+    padding: 14,
+    width: '80%',
   },
-  close: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-  },
-  image: {
-    width: '100%',
-    height: '60%',
-    borderRadius: 12,
-    resizeMode: 'cover',
-    marginBottom: 20,
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   caption: {
     color: '#fff',
     fontSize: 16,
     marginBottom: 20,
   },
-  button: {
-    width: '80%',
-    padding: 14,
-    marginTop: 10,
-    borderRadius: 8,
-    alignItems: 'center',
+  close: {
+    position: 'absolute',
+    right: 20,
+    top: 40,
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  container: {
+    alignItems: 'center',
+    backgroundColor: '#000',
+    flex: 1,
+    justifyContent: 'center',
+    padding: 16,
+  },
+  image: {
+    borderRadius: 12,
+    height: '60%',
+    marginBottom: 20,
+    resizeMode: 'cover',
+    width: '100%',
   },
 });

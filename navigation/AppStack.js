@@ -24,7 +24,13 @@ export default function AppNav() {
   const { user } = useContext(AuthContext);
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        gestureEnabled: false,
+        gestureResponseDistance: { horizontal: 0 },
+      }}
+    >
       {user ? (
         <>
           <Stack.Screen name="MainApp" component={BottomTabNavigator} />
@@ -44,8 +50,11 @@ export default function AppNav() {
             name="LocationPicker"
             component={LocationPicker}
             options={{
-              gestureEnabled: false, // disables swipe back
+              gestureEnabled: false,
+              gestureResponseDistance: { horizontal: 0 },
               headerShown: false,
+              animationEnabled: false, // if needed
+              presentation: 'card', // ensure card presentation so swipe-back is off
             }}
           />
           <Stack.Screen name="Chat" component={ChatScreen} />

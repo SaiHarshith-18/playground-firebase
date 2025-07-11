@@ -43,7 +43,7 @@ export default function AllMediaScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>All Media</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.replace('AllUserEvents')}>
           <Ionicons name="close" size={26} />
         </TouchableOpacity>
       </View>

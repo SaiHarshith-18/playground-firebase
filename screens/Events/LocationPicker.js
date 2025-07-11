@@ -11,12 +11,11 @@ import {
   ScrollView,
   SafeAreaView,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { LOCATION_API_KEY, GEOCODING_API_KEY } from '@env';
-import { useRoute } from '@react-navigation/native';
 
 const GOOGLE_API_KEY = LOCATION_API_KEY;
 
@@ -155,7 +154,9 @@ export default function LocationPicker({ navigation }) {
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <View style={styles.searchContainer}>
-        <TouchableOpacity onPress={() => navigation.navigate('MainApp', { screen: 'Home' })}>
+        <TouchableOpacity
+          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'CreateEvent' }] })}
+        >
           <Ionicons name="arrow-back" size={28} color="black" />
         </TouchableOpacity>
         <View style={styles.searchBox}>
@@ -258,87 +259,87 @@ export default function LocationPicker({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  searchContainer: {
-    position: 'absolute',
-    top: 70,
-    left: 10,
-    right: 20,
-    zIndex: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  searchBox: {
-    flex: 1,
-  },
-  searchInput: {
-    height: 44,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  resultOverlay: {
-    position: 'absolute',
-    top: 52,
-    left: 0,
-    right: 0,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    maxHeight: 200,
-    marginTop: 4,
-    paddingHorizontal: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
-    zIndex: 25,
-  },
-  resultItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderBottomColor: '#eee',
-    borderBottomWidth: 1,
-    fontSize: 15,
-  },
-  map: {
-    flex: 1,
-  },
   confirmBtn: {
-    position: 'absolute',
-    bottom: 30,
-    left: 30,
-    right: 30,
-    backgroundColor: '#FF822B',
-    paddingVertical: 14,
-    borderRadius: 10,
     alignItems: 'center',
-    zIndex: 10,
+    backgroundColor: '#FF822B',
+    borderRadius: 10,
+    bottom: 30,
+    elevation: 5,
+    left: 30,
+    paddingVertical: 14,
+    position: 'absolute',
+    right: 30,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
-    elevation: 5,
+    zIndex: 10,
   },
   confirmText: {
     color: '#fff',
-    fontWeight: 'bold',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  container: {
+    flex: 1,
   },
   locationPreview: {
-    marginTop: 6,
-    fontSize: 12,
     color: '#fff',
+    fontSize: 12,
+    marginTop: 6,
+  },
+  map: {
+    flex: 1,
+  },
+  resultItem: {
+    borderBottomColor: '#eee',
+    borderBottomWidth: 1,
+    fontSize: 15,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+  },
+  resultOverlay: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    elevation: 3,
+    left: 0,
+    marginTop: 4,
+    maxHeight: 200,
+    paddingHorizontal: 4,
+    position: 'absolute',
+    right: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    top: 52,
+    zIndex: 25,
+  },
+  searchBox: {
+    flex: 1,
+  },
+  searchContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    left: 10,
+    position: 'absolute',
+    right: 20,
+    top: 70,
+    zIndex: 20,
+  },
+  searchInput: {
+    backgroundColor: '#fff',
+    borderColor: '#ccc',
+    borderRadius: 8,
+    borderWidth: 1,
+    elevation: 2,
+    fontSize: 16,
+    height: 44,
+    paddingHorizontal: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
 });
