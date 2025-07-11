@@ -13,7 +13,6 @@ import AllMediaScreen from '../screens/Media/AllMediaScreen';
 import CreateEventScreen from '../screens/Events/CreateEventScreen';
 import LocationPicker from '../screens/Events/LocationPicker';
 import UserEventList from '../screens/Events/UserEventList';
-import Notification from '../screens/Notifications/NotificationScreen';
 import EventDetails from '../screens/Events/EventDetails';
 import CallOutModal from '../screens/Events/CalloutModal';
 import SelectUser from '../screens/Events/SelectUserScreen';
@@ -31,10 +30,16 @@ export default function AppNav() {
         gestureResponseDistance: { horizontal: 0 },
       }}
     >
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        gestureEnabled: false,
+        gestureResponseDistance: { horizontal: 0 },
+      }}
+    >
       {user ? (
         <>
           <Stack.Screen name="MainApp" component={BottomTabNavigator} />
-          <Stack.Screen name="Notifications" component={Notification} />
           <Stack.Screen name="CalloutModal" component={CallOutModal} />
           <Stack.Screen name="SelectUser" component={SelectUser} />
           <Stack.Screen name="AllUserEvents" component={UserEventList} />
@@ -52,9 +57,11 @@ export default function AppNav() {
             options={{
               gestureEnabled: false,
               gestureResponseDistance: { horizontal: 0 },
+              gestureEnabled: false,
+              gestureResponseDistance: { horizontal: 0 },
               headerShown: false,
-              animationEnabled: false, // if needed
-              presentation: 'card', // ensure card presentation so swipe-back is off
+              animationEnabled: false,
+              presentation: 'card',
             }}
           />
           <Stack.Screen name="Chat" component={ChatScreen} />
