@@ -122,7 +122,6 @@ export default function EventDetails({ route, navigation }) {
         <View style={styles.container}>
           <View style={styles.headerRow}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
               <Ionicons name="arrow-back" size={28} color="black" />
             </TouchableOpacity>
             <Text style={styles.title}>{event.title}</Text>
@@ -180,30 +179,30 @@ export default function EventDetails({ route, navigation }) {
 
 const styles = StyleSheet.create({
   attendeeAvatar: {
-    width: 60, // Increase avatar size
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#FF822B',
     alignItems: 'center',
+    backgroundColor: '#fff',
+    borderColor: '#FF822B',
+    borderRadius: 30,
+    borderWidth: 2,
+    height: 60,
     justifyContent: 'center',
-    overflow: 'hidden',
     marginBottom: 6,
+    overflow: 'hidden',
+    width: 60,
   },
   attendeeCard: {
     alignItems: 'center',
-    marginBottom: 12,
     flexBasis: '30%',
     flexGrow: 1,
+    marginBottom: 12,
     maxWidth: '32%',
   },
   attendeeList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 8,
     gap: 0,
     justifyContent: 'space-between',
+    marginTop: 8,
   },
   attendeeName: {
     color: '#333',
@@ -213,49 +212,32 @@ const styles = StyleSheet.create({
   btnText: { color: '#fff', fontWeight: 'bold' },
   container: { padding: 20 },
   editActions: {
-  editActions: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 20,
-  },
-  headerRow: {
     justifyContent: 'space-around',
     marginTop: 20,
   },
   headerRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    flexDirection: 'row',
     justifyContent: 'center',
     marginBottom: 20,
-    marginBottom: 20,
     position: 'relative',
-    width: '100%',
-  },
     width: '100%',
   },
   input: {
     borderColor: '#ccc',
     borderRadius: 6,
     borderWidth: 1,
-    borderWidth: 1,
     marginTop: 6,
-    padding: 8,
     padding: 8,
   },
   joinBtn: {
     alignItems: 'center',
     alignSelf: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
     backgroundColor: '#FF822B',
     borderRadius: 8,
     elevation: 2,
-    elevation: 2,
     marginBottom: 12,
-    marginTop: 24,
-    paddingHorizontal: 32,
-    paddingVertical: 12,
     marginTop: 24,
     paddingHorizontal: 32,
     paddingVertical: 12,
@@ -263,23 +245,8 @@ const styles = StyleSheet.create({
   joinText: {
     color: '#fff',
     fontSize: 16,
-    fontSize: 16,
     fontWeight: 'bold',
   },
-  label: { color: '#444', fontSize: 16, fontWeight: '600', marginTop: 16 },
-  safeArea: { backgroundColor: '#fff', flex: 1 },
-  saveBtn: {
-    backgroundColor: '#FF822B',
-    borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  title: {
-    color: '#FF822B',
-    flex: 1,
-    fontSize: 24,
-    fontWeight: 'bold',
-    paddingLeft: 0,
   label: { color: '#444', fontSize: 16, fontWeight: '600', marginTop: 16 },
   safeArea: { backgroundColor: '#fff', flex: 1 },
   saveBtn: {
@@ -296,6 +263,5 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     textAlign: 'center',
   },
-  value: { color: '#333', fontSize: 15, marginTop: 4 },
   value: { color: '#333', fontSize: 15, marginTop: 4 },
 });
