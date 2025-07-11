@@ -12,9 +12,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { db } from '../../firebaseConfig';
-import { doc, deleteDoc } from 'firebase/firestore';
+import { doc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 import { AuthContext } from '../../contexts/AuthContext';
-import { collection, getDocs } from 'firebase/firestore';
 import { parseEventDateTime } from '../../utils/Date';
 import { EventCard } from './EventCard';
 
@@ -76,9 +75,7 @@ export default function TodayUserEvents({ navigation }) {
           resizeMode="contain"
         />
         <View style={styles.emptyRow}>
-          <Text style={styles.emptyText}>
-            Oops! No events on the board. Time to make your move!
-          </Text>
+          <Text style={styles.emptyText}>Oops! No events on the board.</Text>
           <TouchableOpacity onPress={() => navigation.navigate('CreateEvent')}>
             <Text style={styles.createEventLink}>Create Event</Text>
           </TouchableOpacity>
@@ -128,32 +125,32 @@ export default function TodayUserEvents({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  eventsContainer: { marginTop: 8, marginBottom: 16 },
+  createEventLink: {
+    color: '#FF822B',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 6,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+  },
   emptyContainer: {
-    marginVertical: 0,
     alignItems: 'center',
     justifyContent: 'center',
+    marginVertical: 0,
   },
   emptyRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
     marginTop: 2,
   },
   emptyText: {
     color: '#666',
-    textAlign: 'center',
     fontSize: 15,
     marginBottom: 6,
     marginRight: 6,
-  },
-  createEventLink: {
-    color: '#FF822B',
     textAlign: 'center',
-    textDecorationLine: 'underline',
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 6,
   },
+  eventsContainer: { marginBottom: 16, marginTop: 8 },
 });
