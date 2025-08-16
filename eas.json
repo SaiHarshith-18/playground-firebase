@@ -1,25 +1,46 @@
 {
   "cli": {
-    "appVersionSource": "local"
+    "appVersionSource": "local",
+    "version": ">= 14.0.0"
   },
-
   "build": {
-    "production": {
-      "android": {
-        "buildType": "apk"
-      },
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
       "ios": {
-        "simulator": false
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "gradleCommand": ":app:assembleDebug"
       }
     },
-
+    "simulator": {
+      "ios": {
+        "simulator": true,
+        "resourceClass": "m-medium"
+      }
+    },
     "preview": {
+      "distribution": "internal",
       "android": {
         "buildType": "apk"
       },
       "ios": {
         "simulator": true
       }
+    },
+    "production": {
+      "distribution": "store",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": false,
+        "resourceClass": "m-medium"
+      }
     }
+  },
+  "submit": {
+    "production": {}
   }
 }

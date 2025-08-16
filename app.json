@@ -7,29 +7,64 @@
     "icon": "./assets/callout.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "scheme": "playground",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.app.playground",
+      "bundleIdentifier": "com.demo.playground",
+      "buildNumber": "1.0.0",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Camera access is used to capture photos within the app.",
+        "NSPhotoLibraryUsageDescription": "Photo library access lets you select images to upload.",
+        "NSPhotoLibraryAddUsageDescription": "We add images you create/export to your library when you choose to save.",
+        "NSLocationWhenInUseUsageDescription": "Location is used to power nearby and map-based features."
       }
     },
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.app.playground"
+      "package": "com.demo.playground",
+      "versionCode": 1
     },
+
     "web": {
       "favicon": "./assets/favicon.png"
     },
+
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": { "useFrameworks": "static" }
+        }
+      ],
+      
+      
+       [
+          "expo-firebase-core",
+          {
+            
+            "ios": { "googleServicesFile": "./GoogleService-Info.plist" }
+          }
+        ],
+      [
+        "expo-firebase-core",
+        {
+          "ios": { "googleServicesFile": "./GoogleService-Info.plist" }
+        }
+      ]
+    ],
+
     "extra": {
       "eas": {
         "projectId": "25c9e6ae-65e5-493f-a560-151d4eb658a7"
