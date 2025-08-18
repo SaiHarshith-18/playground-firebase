@@ -160,71 +160,71 @@ export default function ChatScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  botBubble: {
+    backgroundColor: '#727472',
+    borderTopLeftRadius: 0,
+  },
+  bubble: {
+    borderRadius: 16,
+    maxWidth: '70%',
+    padding: 12,
+  },
+  bubbleText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  centered: { alignItems: 'center', flex: 1, justifyContent: 'center' },
+  chatArea: {
+    padding: 10,
+  },
+  container: { backgroundColor: '#fff', flex: 1 },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
-    padding: 15,
     borderBottomWidth: 1,
     borderColor: '#eee',
+    flexDirection: 'row',
+    padding: 15,
   },
   headerAvatar: {
-    width: 36,
-    height: 36,
     borderRadius: 18,
+    height: 36,
     marginLeft: 10,
+    width: 36,
   },
   headerTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 10,
   },
-  chatArea: {
+  input: {
+    borderColor: '#ccc',
+    borderRadius: 20,
+    borderWidth: 1,
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  inputWrapper: {
+    backgroundColor: '#fff',
+    borderColor: '#eee',
+    borderTopWidth: 1,
+    flexDirection: 'row',
     padding: 10,
   },
   messageRow: {
     flexDirection: 'row',
     marginBottom: 12,
   },
-  bubble: {
-    maxWidth: '70%',
-    padding: 12,
-    borderRadius: 16,
-  },
-  botBubble: {
-    backgroundColor: '#727472',
-    borderTopLeftRadius: 0,
+  sendButton: {
+    alignItems: 'center',
+    backgroundColor: '#FF822B',
+    borderRadius: 20,
+    justifyContent: 'center',
+    marginLeft: 8,
+    padding: 10,
   },
   userBubble: {
     backgroundColor: '#FF822B',
     borderTopRightRadius: 0,
-  },
-  bubbleText: {
-    fontSize: 14,
-    color: '#fff',
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    padding: 10,
-    borderTopWidth: 1,
-    borderColor: '#eee',
-    backgroundColor: '#fff',
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  sendButton: {
-    backgroundColor: '#FF822B',
-    padding: 10,
-    borderRadius: 20,
-    marginLeft: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });

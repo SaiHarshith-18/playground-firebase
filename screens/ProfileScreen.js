@@ -331,8 +331,6 @@ export default function ProfileScreen() {
                   onPress={() =>
                     navigation.navigate('PostDetail', {
                       post: item,
-                      onDelete: async id => handleDeletePost(id),
-                      onEdit: async post => handleEditPost(post),
                     })
                   }
                 >

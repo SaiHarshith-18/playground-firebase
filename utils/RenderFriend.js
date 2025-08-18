@@ -71,25 +71,10 @@ export const RenderFriend = ({
 };
 
 const styles = StyleSheet.create({
-  friendCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f9f9f9',
-    padding: 10,
-    borderRadius: 10,
-  },
-  friendAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 12,
-  },
-  friendInfo: {
-    flex: 1,
-  },
-  friendName: {
+  addButtonText: {
+    color: '#fff',
+    fontSize: 12,
     fontWeight: 'bold',
-    fontSize: 14,
   },
   friendAbout: {
     color: '#666',
@@ -98,13 +83,28 @@ const styles = StyleSheet.create({
   },
   friendAddButton: {
     backgroundColor: '#FF822B',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
     borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 12,
+  friendAvatar: {
+    borderRadius: 25,
+    height: 50,
+    marginRight: 12,
+    width: 50,
+  },
+  friendCard: {
+    alignItems: 'center',
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    flexDirection: 'row',
+    padding: 10,
+  },
+  friendInfo: {
+    flex: 1,
+  },
+  friendName: {
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });

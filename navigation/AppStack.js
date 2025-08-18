@@ -2,7 +2,7 @@
 import React, { useContext } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { AuthProvider, AuthContext } from '../contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContext';
 import LoginScreen from '../screens/Authentication/LoginScreen';
 import RegisterScreen from '../screens/Authentication/RegisterScreen';
 import PostDetailScreen from '../screens/Media/PostDetailScreen';
@@ -30,13 +30,6 @@ export default function AppNav() {
         gestureResponseDistance: { horizontal: 0 },
       }}
     >
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        gestureEnabled: false,
-        gestureResponseDistance: { horizontal: 0 },
-      }}
-    >
       {user ? (
         <>
           <Stack.Screen name="MainApp" component={BottomTabNavigator} />
@@ -55,8 +48,6 @@ export default function AppNav() {
             name="LocationPicker"
             component={LocationPicker}
             options={{
-              gestureEnabled: false,
-              gestureResponseDistance: { horizontal: 0 },
               gestureEnabled: false,
               gestureResponseDistance: { horizontal: 0 },
               headerShown: false,

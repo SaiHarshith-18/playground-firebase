@@ -68,13 +68,13 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#fff',
+    flex: 1,
   },
   subheader: {
-    fontWeight: 'bold',
-    fontSize: 14,
     color: '#444',
+    fontSize: 14,
+    fontWeight: 'bold',
     paddingLeft: 16,
     paddingTop: 10,
   },

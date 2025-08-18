@@ -103,64 +103,64 @@ export default function CalloutModal() {
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.25)',
+  buttonText: {
+    color: '#FF822B',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
-  modalContent: {
-    backgroundColor: '#FF822B',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingTop: 48,
-    paddingHorizontal: 16,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
-    height: '90%',
+  challengeButton: {
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginTop: 20,
+    padding: 14,
   },
   downArrowContainer: {
+    alignSelf: 'center',
     position: 'absolute',
     top: 10,
-    alignSelf: 'center',
     zIndex: 10,
-  },
-  heading: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 12,
   },
   eventCard: {
     backgroundColor: '#fff',
-    padding: 12,
     borderRadius: 8,
     marginBottom: 10,
-  },
-  eventTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
+    padding: 12,
   },
   eventDetail: {
     color: '#666',
     fontSize: 13,
     marginTop: 2,
   },
-  challengeButton: {
-    marginTop: 20,
-    backgroundColor: '#fff',
-    padding: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#FF822B',
-    fontWeight: 'bold',
+  eventTitle: {
     fontSize: 16,
+    fontWeight: 'bold',
   },
   headerRow: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 4,
+  },
+  heading: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  modalContent: {
+    backgroundColor: '#FF822B',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    height: '90%',
+    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
+    paddingHorizontal: 16,
+    paddingTop: 48,
+  },
+  overlay: {
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    flex: 1,
+    justifyContent: 'flex-end',
   },
   seeAllText: {
     color: '#fff',
