@@ -74,7 +74,12 @@ export default function PostDetailScreen({ route, navigation }) {
     <SafeAreaView style={styles.container}>
       <TouchableOpacity
         style={styles.close}
-        onPress={() => navigation.reset('MainApp', { screen: 'Profile' })}
+        onPress={() =>
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'MainApp', params: { screen: 'Profile' } }],
+          })
+        }
       >
         <Ionicons name="close" size={28} color="#fff" />
       </TouchableOpacity>

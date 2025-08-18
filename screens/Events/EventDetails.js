@@ -165,7 +165,6 @@ export default function EventDetails({ route, navigation }) {
               attendeeUsers.map(user => (
                 <View key={user.uid} style={styles.attendeeCard}>
                   <UserAvatar avatar={user.avatar} size={60} style={styles.attendeeAvatar} />
-                  <UserAvatar avatar={user.avatar} size={60} style={styles.attendeeAvatar} />
                   <Text style={styles.attendeeName}>{user.fullName || 'User'}</Text>
                 </View>
               ))
@@ -192,16 +191,15 @@ const styles = StyleSheet.create({
   },
   attendeeCard: {
     alignItems: 'center',
-    flexBasis: '30%',
-    flexGrow: 1,
     marginBottom: 12,
-    maxWidth: '32%',
+    marginRight: 12,
+    width: 90,
   },
   attendeeList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 0,
-    justifyContent: 'space-between',
+    gap: 12,
+    justifyContent: 'flex-start',
     marginTop: 8,
   },
   attendeeName: {
