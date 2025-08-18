@@ -1,10 +1,10 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert, SafeAreaView, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, SafeAreaView, StyleSheet } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Menu, Provider } from 'react-native-paper';
 import { db } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
-import { doc, deleteDoc, getDoc, updateDoc, arrayUnion, collection } from 'firebase/firestore';
+import { doc, deleteDoc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { useFocusEffect } from '@react-navigation/native';
 import UserAvatar from '../../utils/UserAvatar';
 

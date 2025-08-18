@@ -72,6 +72,12 @@ export default function UserEventList() {
     }
   }, [events, filters, sortBy, searchQuery]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchEvents(); // or your refresh logic
+    }, [])
+  );
+
   const paginatedExploreEvents = exploreEvents.slice(0, explorePage * EVENTS_PER_PAGE);
 
   const handleLoadMore = () => {
@@ -386,9 +392,6 @@ export default function UserEventList() {
                   navigation.navigate('EventDetails', {
                     event: selectedEvent,
                     userId: user.uid,
-                    onDelete: () => {
-                      fetchEvents();
-                    },
                   })
                 }
               />

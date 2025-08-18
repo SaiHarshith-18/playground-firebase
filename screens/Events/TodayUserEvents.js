@@ -89,7 +89,11 @@ export default function TodayUserEvents({ navigation }) {
       <ScrollView
         horizontal
         style={styles.eventsContainer}
-        contentContainerStyle={{ gap: 10, paddingHorizontal: 4 }}
+        contentContainerStyle={
+          todayEvents.length === 1
+            ? { justifyContent: 'center', alignItems: 'center', minWidth: '100%' }
+            : { gap: 10, paddingHorizontal: 4, paddingRight: 50 }
+        }
         showsHorizontalScrollIndicator={false}
       >
         {todayEvents.map(event => (
