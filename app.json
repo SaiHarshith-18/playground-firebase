@@ -2,7 +2,7 @@
   "expo": {
     "name": "playground",
     "slug": "playground",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/callout.png",
     "userInterfaceStyle": "light",
@@ -16,8 +16,8 @@
 
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.demo.playground",
-      "buildNumber": "1.0.0",
+      "bundleIdentifier": "com.demoreactnative.playground",
+      "buildNumber": "1.0.3",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Camera access is used to capture photos within the app.",
@@ -33,7 +33,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.demo.playground",
+      "package": "com.demoreactnative.playground",
       "versionCode": 1
     },
 
@@ -67,7 +67,8 @@
 
     "extra": {
       "eas": {
-        "projectId": "25c9e6ae-65e5-493f-a560-151d4eb658a7"
+        "projectId": "25c9e6ae-65e5-493f-a560-151d4eb658a7",
+        "IMGUR_CLIENT_ID": "@env:IMGUR_CLIENT_ID"
       }
     }
   }
