@@ -1,5 +1,6 @@
 /* eslint-disable react-native/no-color-literals */
 import React, { useState, useContext } from 'react';
+import * as FileSystem from 'expo-file-system';
 import {
   View,
   Text,
@@ -21,9 +22,9 @@ import { AuthContext } from '../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import TodayUserEvents from './Events/TodayUserEvents';
 import Svg, { Path } from 'react-native-svg';
-import { IMGUR_CLIENT_ID } from '@env';
 
 export default function ProfileScreen() {
+  const IMGUR_CLIENT_ID = process.env.EXPO_PUBLIC_IMGUR_CLIENT_ID;
   const { user } = useContext(AuthContext);
   const navigation = useNavigation();
   const [profileData, setProfileData] = useState(null);
@@ -123,33 +124,21 @@ export default function ProfileScreen() {
     }
   };
 
-  const uploadToImgur = async uri => {
-    const base64Img = await fetch(uri)
-      .then(res => res.blob())
-      .then(
-        blob =>
-          new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            reader.readAsDataURL(blob);
-          })
-      );
-
+  const uploadToImgur = async (uri) => {
+    const base64Img = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+  
     const response = await fetch('https://api.imgur.com/3/image', {
       method: 'POST',
       headers: {
         Authorization: `Client-ID ${IMGUR_CLIENT_ID}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        image: base64Img,
-        type: 'base64',
-      }),
+      body: JSON.stringify({ image: base64Img, type: 'base64' }),
     });
-
+  
     const result = await response.json();
     if (result.success) return result.data.link;
-    throw new Error('Image upload failed');
+    throw new Error(result.data.error || 'Image upload failed');
   };
 
   const addNewMedia = async () => {

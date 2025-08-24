@@ -2,7 +2,7 @@
   "expo": {
     "name": "playground",
     "slug": "playground",
-    "version": "1.0.3",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/callout.png",
     "userInterfaceStyle": "light",
@@ -17,7 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.demoreactnative.playground",
-      "buildNumber": "1.0.3",
+      "buildNumber": "1.0.5",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Camera access is used to capture photos within the app.",
@@ -56,13 +56,7 @@
             
             "ios": { "googleServicesFile": "./GoogleService-Info.plist" }
           }
-        ],
-      [
-        "expo-firebase-core",
-        {
-          "ios": { "googleServicesFile": "./GoogleService-Info.plist" }
-        }
-      ]
+        ]
     ],
 
     "extra": {
