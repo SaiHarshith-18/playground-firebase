@@ -15,9 +15,10 @@ import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { LOCATION_API_KEY, GEOCODING_API_KEY } from '@env';
+// import { LOCATION_API_KEY, GEOCODING_API_KEY } from '@env';
 
-const GOOGLE_API_KEY = LOCATION_API_KEY;
+const GOOGLE_API_KEY  = process.env.EXPO_PUBLIC_GOOGLE_PLACES_KEY;
+const GEOCODING_API_KEY      = process.env.EXPO_PUBLIC_GEOCODING_KEY || GOOGLE_PLACES_KEY;
 
 export default function LocationPicker({ navigation }) {
   const [region, setRegion] = useState(null);
